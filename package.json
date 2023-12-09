@@ -1,0 +1,29 @@
+{
+  "name": "@stefanensmann/heos-cli",
+  "version": "0.0.1",
+  "license": "MIT",
+  "author": {
+    "name": "Stefan Ensmann",
+    "url": "https://stefan.ensmann.de"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/StefanEnsmann/heos-cli.git"
+  },
+  "bugs": "https://github.com/stefanensmann/heos-cli/issues",
+  "description": "A high-level API to interact with HEOS devices.",
+  "keywords": [
+    "heos",
+    "music",
+    "multiroom",
+    "audio",
+    "avr",
+    "speaker",
+    "denon",
+    "marantz"
+  ],
+  "packageManager": "yarn@4.0.2",
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
