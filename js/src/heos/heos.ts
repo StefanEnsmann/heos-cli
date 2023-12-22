@@ -55,8 +55,4 @@ export class HEOS {
         .on("message", handleResponse);
     });
   }
-
-  static connectTo(device: RoutingInfo): Promise<HEOSConnection> {
-    return HEOSConnection.toDevice(device);
-  }
 }
