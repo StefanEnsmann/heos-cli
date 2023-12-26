@@ -24,6 +24,11 @@ export const enum HEOSMusicSource {
   HEOSFavorites = 1028,
 }
 
+export const enum Result {
+  Success = 'success',
+  Fail = 'fail',
+}
+
 export const enum Enable {
   On = "on",
   Off = "off",
