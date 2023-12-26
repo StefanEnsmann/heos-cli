@@ -24,6 +24,9 @@ export const enum HEOSMusicSource {
   HEOSFavorites = 1028,
 }
 
+export type NonStation = HEOSMusicSource.LocalMedia | HEOSMusicSource.HEOSPlaylists | HEOSMusicSource.HEOSHistory | HEOSMusicSource.HEOSAuxInputs | HEOSMusicSource.HEOSFavorites
+export type Station = Exclude<HEOSMusicSource, NonStation>
+
 export const enum Result {
   Success = 'success',
   Fail = 'fail',
@@ -33,6 +36,8 @@ export const enum Enable {
   On = "on",
   Off = "off",
 }
+export type Mute = Enable
+export type Shuffle = Enable
 
 export const enum Network {
   Wired = "wired",
@@ -58,19 +63,9 @@ export const enum PlayState {
   Stop = "stop",
 }
 
-export const enum Mute {
-  On = "on",
-  Off = "off",
-}
-
 export const enum RepeatMode {
   RepeatAll = "on_all",
   RepeatOne = "on_one",
-  Off = "off",
-}
-
-export const enum ShuffleMode {
-  On = "on",
   Off = "off",
 }
 
@@ -183,20 +178,4 @@ export const enum SystemError {
   GeneralAuthenticationError = 1201,
   UserAuthorizationError = 1232,
   UserParametersInvalid = 1239,
-}
-
-export const enum Event {
-  SourcesChanged = "event/sources_changed",
-  PlayersChanged = "event/players_changed",
-  GroupsChanged = "event/groups_changed",
-  PlayerStateChanged = "event/player_state_changed",
-  PlayerNowPlayingChanged = "event/player_now_playing_changed",
-  PlayerNowPlayingProgress = "event/player_now_playing_progress",
-  PlayerPlaybackError = "event/player_playback_error",
-  PlayerQueueChanged = "event/player_queue_changed",
-  PlayerVolumeChanged = "event/player_volume_changed",
-  RepeatModeChanged = "event/repeat_mode_changed",
-  ShuffleModeChanged = "event/shuffle_mode_changed",
-  GroupVolumeChanged = "event/group_volume_changed",
-  UserChanged = "event/user_changed",
 }
