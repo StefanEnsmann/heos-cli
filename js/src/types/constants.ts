@@ -1,4 +1,4 @@
-export const enum HEOSMusicSource {
+export const enum MusicSource {
   Pandora = 1,
   Rhapsody = 2,
   TuneIn = 3,
@@ -24,20 +24,39 @@ export const enum HEOSMusicSource {
   HEOSFavorites = 1028,
 }
 
-export type NonStation = HEOSMusicSource.LocalMedia | HEOSMusicSource.HEOSPlaylists | HEOSMusicSource.HEOSHistory | HEOSMusicSource.HEOSAuxInputs | HEOSMusicSource.HEOSFavorites
-export type Station = Exclude<HEOSMusicSource, NonStation>
+export type NonStation = MusicSource.LocalMedia | MusicSource.HEOSPlaylists | MusicSource.HEOSHistory | MusicSource.HEOSAuxInputs | MusicSource.HEOSFavorites
+export type Station = Exclude<MusicSource, NonStation>
 
-export const enum Result {
-  Success = 'success',
-  Fail = 'fail',
+export const enum MusicSourceType {
+  MusicService = "music_service",
+  HEOSService = "heos_service",
+  HEOSServer = "heos_server",
+  DLNAServer = "dlna_server"
 }
 
-export const enum Enable {
+export const enum MediaType {
+  Album = "album",
+  Artist = "artist",
+  Container = "container",
+  Song = "song",
+  Station = "station",
+  Genre = "genre",
+}
+
+export const enum Result {
+  Success = "success",
+  Fail = "fail",
+}
+
+export const enum OnOff {
   On = "on",
   Off = "off",
 }
-export type Mute = Enable
-export type Shuffle = Enable
+
+export const enum YesNo {
+  Yes = "yes",
+  No = "no",
+}
 
 export const enum Network {
   Wired = "wired",
@@ -69,6 +88,11 @@ export const enum RepeatMode {
   Off = "off",
 }
 
+export const enum Role {
+  Leader = "leader",
+  Member = "member",
+}
+
 export const enum QueueType {
   PlayNow = 1,
   PlayNext = 2,
@@ -93,7 +117,7 @@ export const enum Options {
   PlayableContainer = 21,
 }
 
-export const enum CreateStationOptions {
+export const enum SearchCriteria {
   Artist = 1,
   Track = 3,
   Show = 5,
