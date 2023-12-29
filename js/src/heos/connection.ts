@@ -116,6 +116,7 @@ export class Connection {
               promiseCallbacks.reject(obj.heos.message);
             }
           }
+          this.pendingRequests.delete(obj.heos.command);
         })
         .on("timeout", () => {
           if (this.socket) {
