@@ -27,7 +27,7 @@ export type GetPlayers = FailableResponseWithPayload<
 >;
 export type GetPlayerInfo = FailableResponseWithPayload<
   typeof Player.GetPlayerInfo,
-  "",
+  PID,
   PlayerInfo
 >;
 export type GetPlayState = FailableResponse<
