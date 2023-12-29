@@ -1,10 +1,65 @@
-import { Socket, createConnection } from "net";
-import { ConnectionStatus, RoutingInfo } from "../types/network";
-import { HEOS } from "./heos";
+import { createSocket } from "dgram";
+import { Socket } from "net";
+import {
+  ConnectionStatus,
+  type RoutingInfo,
+  type DiscoveryOptions,
+} from "../types/network.js";
 
-export const HEOSPort = 1255;
+const schemaName = "urn:schemas-denon-com:device:ACT-Denon:1";
+const discoverMessage = [
+  "M-SEARCH * HTTP/1.1",
+  "HOST: 239.255.255.250:1900",
+  `ST: ${schemaName}`,
+  "MX: 5",
+  'MAN: "ssdp:discover"',
+  "\r\n",
+].join("\r\n");
 
-export class HEOSConnection {
+export function discoverDevices({
+  timeout = 5000,
+  maxDevices = 1,
+  onDiscover,
+  onTimeout,
+}: DiscoveryOptions = {}): Promise<RoutingInfo[]> {
+  return new Promise<RoutingInfo[]>((resolve, reject) => {
+    const devices: RoutingInfo[] = [];
+    const timeoutReference = setTimeout(stopDiscovery, timeout);
+    const socket = createSocket("udp4");
+
+    function stopDiscovery(early: boolean = false) {
+      socket.close();
+      global.clearTimeout(timeoutReference);
+      if (!early && onTimeout) {
+        onTimeout(devices);
+      }
+      devices.length > 0 ? resolve(devices) : reject("No devices found!");
+    }
+
+    function handleResponse(msg: string, routingInfo: RoutingInfo) {
+      if (!msg.includes(schemaName)) {
+        return;
+      }
+
+      devices.push(routingInfo);
+      if (onDiscover) {
+        onDiscover(routingInfo);
+      }
+      if (maxDevices && devices.length >= maxDevices) {
+        stopDiscovery(true);
+      }
+    }
+
+    socket
+      .bind()
+      .on("listening", () => {
+        socket.send(discoverMessage, 1900, "239.255.255.250");
+      })
+      .on("message", handleResponse);
+  });
+}
+export const Port = 1255;
+export class Connection {
   device: RoutingInfo;
   socket: Socket;
   status: ConnectionStatus = ConnectionStatus.Pending;
@@ -14,8 +69,8 @@ export class HEOSConnection {
     this.socket = new Socket().on("data", () => {});
   }
 
-  connect(): Promise<HEOSConnection> {
-    return new Promise<HEOSConnection>((resolve, reject) => {
+  connect(): Promise<Connection> {
+    return new Promise<Connection>((resolve, reject) => {
       this.status = ConnectionStatus.Connecting;
       this.socket
         .on("timeout", () => {
@@ -29,7 +84,7 @@ export class HEOSConnection {
         })
         .connect(
           {
-            port: HEOSPort,
+            port: Port,
             host: this.device.address,
             localPort: 0,
           },

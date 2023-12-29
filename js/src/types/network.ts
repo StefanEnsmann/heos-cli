@@ -12,11 +12,14 @@ export type DiscoveryOptions = {
   onTimeout?: (devices: RoutingInfo[]) => void;
 };
 
-export const enum ConnectionStatus {
-  Pending,
-  Connecting,
-  Connected,
-  Closed,
-  Timeout,
-  Error,
-}
+export const ConnectionStatus = {
+  Pending: "pending",
+  Connecting: "connecting",
+  Connected: "connected",
+  Closed: "closed",
+  Timeout: "timeout",
+  Error: "error",
+} as const;
+
+export type ConnectionStatus =
+  (typeof ConnectionStatus)[keyof typeof ConnectionStatus];
