@@ -8,7 +8,7 @@ export type FailedResponse<CMD extends Command> = {
   heos: {
     command: CMD;
     result: typeof Result.Fail;
-    message: Error | SystemError;
+    message: `eid=${Error | SystemError}&text=${string}`;
   };
 };
 
@@ -23,27 +23,16 @@ export type SuccessfulResponse<
   };
 };
 
-export type FailableResponse<
-  CMD extends Command,
-  SuccessMessage extends string
-> = SuccessfulResponse<CMD, SuccessMessage> | FailedResponse<Command>;
+export type WithPayload<
+  Response extends SuccessfulResponse<Command, string>,
+  Payload extends Object
+> = Response & {
+  payload: Payload;
+};
 
-export type FailableResponseWithPayload<
-  CMD extends Command,
-  SuccessMessage extends string,
-  Payload extends Object | Array<any>
-> =
-  | (SuccessfulResponse<CMD, SuccessMessage> & { payload: Payload })
-  | FailedResponse<CMD>;
-
-export type FailableResponseWithPayloadAndOptions<
-  CMD extends Command,
-  SuccessMessage extends string,
-  Payload extends Object | Array<any>,
+export type WithOptions<
+  Response extends SuccessfulResponse<Command, string>,
   Options extends Array<any>
-> =
-  | (SuccessfulResponse<CMD, SuccessMessage> & {
-      payload: Payload;
-      options: Options;
-    })
-  | FailedResponse<CMD>;
+> = Response & {
+  options: Options;
+};
