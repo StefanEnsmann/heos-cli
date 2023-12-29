@@ -15,6 +15,7 @@ import type {
   YesNo,
 } from "./constants.js";
 import type {
+  AlbumId,
   ContainerId,
   GroupId,
   MediaId,
@@ -51,7 +52,7 @@ export type PlayingMedia = {
 } & (
   | {
       type: "song";
-      album_id: string;
+      album_id: AlbumId;
       sid: NonStation;
     }
   | {

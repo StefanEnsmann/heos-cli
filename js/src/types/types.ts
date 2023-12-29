@@ -1,6 +1,7 @@
 export type PlayerId = number;
 export type GroupId = number;
 export type QueueId = number;
+export type AlbumId = string;
 
 // recursive types bad, just for exercise
 type Length<T extends any[]> = T extends { length: infer L } ? L : never;
