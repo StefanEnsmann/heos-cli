@@ -70,7 +70,10 @@ function buildCommandString(command: Command, query: Query = {}): string {
     Object.keys(query).length > 0
       ? "?" +
         Object.entries(query)
-          .map(([key, value]) => `${key}=${value}`)
+          .map(
+            ([key, value]) =>
+              `${key}=${Array.isArray(value) ? value.join(",") : value}`
+          )
           .reduce((previous, current) => `${previous}&${current}`)
       : "";
 

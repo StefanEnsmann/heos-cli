@@ -27,14 +27,14 @@ export type Query = Partial<{
   cid: ContainerId;
   range: `${number},${number}`;
   name: string;
-  pid: PlayerId | CommaSeparatedList<PlayerId>;
+  pid: PlayerId | Array<PlayerId>;
   level: number;
   step: number;
   state: OnOff | PlayState;
   repeat: RepeatMode;
   shuffle: OnOff;
-  qid: QueueId | CommaSeparatedList<QueueId>;
-  sqid: CommaSeparatedList<QueueId>;
+  qid: QueueId | Array<QueueId>;
+  sqid: Array<QueueId>;
   dqid: QueueId;
   id: QuickselectId;
 }>;

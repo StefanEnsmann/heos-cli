@@ -11,7 +11,7 @@ type BuildTuple<L extends number, T extends any[] = []> = T extends {
   : BuildTuple<L, [...T, any]>;
 type Inc<A extends number> = Length<[...BuildTuple<A>, any]>;
 type CommaSeparatedListSegment<T extends string | number> = `${T}`;
-export type CommaSeparatedList<T extends string | number, N = 0> = N extends 30
+export type CommaSeparatedList<T extends string | number, N = 0> = N extends 46
   ? CommaSeparatedListSegment<T>
   : N extends number
   ?
