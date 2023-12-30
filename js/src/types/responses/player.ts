@@ -59,7 +59,7 @@ export type GetVolume = SuccessfulResponse<
 >;
 
 export type SetVolume = SuccessfulResponse<
-  typeof Player.GetVolume,
+  typeof Player.SetVolume,
   `${PID}&level=${number}`
 >;
 

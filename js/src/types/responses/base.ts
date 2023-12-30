@@ -1,12 +1,17 @@
 import type { Command } from "../commands/index.js";
-import type { Error, Result, SystemError } from "../constants.js";
+import type {
+  CommandUnderProcess,
+  Error,
+  Result,
+  SystemError,
+} from "../constants.js";
 import type { PlayerId } from "../types.js";
 
 export type PID = `pid=${PlayerId}`;
 
-export type FailedResponse<CMD extends Command> = {
+export type FailedResponse = {
   heos: {
-    command: CMD;
+    command: Command;
     result: typeof Result.Fail;
     message: `eid=${Error | SystemError}&text=${string}`;
   };
@@ -19,7 +24,7 @@ export type SuccessfulResponse<
   heos: {
     command: CMD;
     result: typeof Result.Success;
-    message: SuccessMessage;
+    message: typeof CommandUnderProcess | SuccessMessage;
   };
 };
 

@@ -45,6 +45,10 @@ export const Result = {
   Fail: "fail",
 } as const;
 
+export const CommandUnderProcess = "command under process";
+export const SignedOut = "signed_out";
+export const SignedIn = "signed_in";
+
 export const On = "on";
 export const Off = "off";
 export const Yes = "yes";
@@ -208,6 +212,7 @@ export type MusicSourceType =
   (typeof MusicSourceType)[keyof typeof MusicSourceType];
 export type MediaType = (typeof MediaType)[keyof typeof MediaType];
 export type Result = (typeof Result)[keyof typeof Result];
+export type LoginState = typeof SignedIn | typeof SignedOut;
 export type OnOff = typeof On | typeof Off;
 export type YesNo = typeof Yes | typeof No;
 export type Network = (typeof Network)[keyof typeof Network];

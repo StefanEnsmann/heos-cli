@@ -1,11 +1,14 @@
-import { Commands, Connection, discoverDevices } from "./dist/index.js";
-import { PlayState } from "./dist/types/constants.js";
+import { Connection, discoverDevices } from "./dist/index.js";
 
 const devices = await discoverDevices();
-console.log("Found device:", devices[0]);
-
 const connection = await new Connection(devices[0]).connect();
-const nowPlayingMedia = await connection.getNowPlayingMedia(-301473007);
-console.log(nowPlayingMedia.payload.song);
-connection.send(Commands.Player.SetPlayState, { pid: -301473007, state: PlayState.Stop });
+const players = await connection.getPlayers();
+for (const player of players) {
+  try {
+    const update = await connection.checkForFirmwareUpdate(player.pid);
+    console.log(player.name, update);
+  } catch (error) {
+    console.error(error.eid, error.text);
+  }
+}
 connection.close();

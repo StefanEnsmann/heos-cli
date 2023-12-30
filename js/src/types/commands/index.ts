@@ -1,8 +1,13 @@
 import type {
+  Error,
+  LoginState,
   MusicSource,
   OnOff,
   PlayState,
   RepeatMode,
+  SignedIn,
+  SignedOut,
+  SystemError,
 } from "../constants.js";
 import type {
   CommaSeparatedList,
@@ -19,22 +24,31 @@ import { System } from "./system.js";
 
 export { Browse, Group, Player, System };
 export type Command = System | Player | Group | Browse;
-export type Query = Partial<{
-  sid: MusicSource;
-  gid: GroupId;
-  returned: number;
-  count: number;
+export type Message = Partial<{
   cid: ContainerId;
-  range: `${number},${number}`;
+  count: number;
+  dqid: QueueId;
+  eid: Error | SystemError;
+  enable: OnOff;
+  fragment: LoginState;
+  gid: GroupId;
+  id: QuickselectId;
+  level: number;
   name: string;
   pid: PlayerId | Array<PlayerId>;
-  level: number;
-  step: number;
-  state: OnOff | PlayState;
-  repeat: RepeatMode;
-  shuffle: OnOff;
+  pw: string;
   qid: QueueId | Array<QueueId>;
+  range: Array<number>;
+  repeat: RepeatMode;
+  returned: number;
+  shuffle: OnOff;
+  sid: MusicSource;
   sqid: Array<QueueId>;
-  dqid: QueueId;
-  id: QuickselectId;
+  state: OnOff | PlayState;
+  step: number;
+  text: string;
+  un: string;
+  url: string;
 }>;
+export type ErrorMessage = Pick<Message, "eid" | "text">;
+export type Query = Omit<Message, "fragment" | "eid" | "text">;

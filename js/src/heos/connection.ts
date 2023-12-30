@@ -5,12 +5,52 @@ import {
   type RoutingInfo,
   type DiscoveryOptions,
 } from "../types/network.js";
-import type { Command, Query } from "../types/commands/index.js";
-import type { PlayerId } from "../types/types.js";
-import type { GetNowPlayingMedia } from "../types/responses/player.js";
+import type {
+  Command,
+  ErrorMessage,
+  Message,
+  Player,
+  Query,
+} from "../types/commands/index.js";
+import type {
+  GroupId,
+  PlayerId,
+  QueueId,
+  QuickselectId,
+} from "../types/types.js";
 import { Commands } from "../index.js";
-import type { FailableResponse } from "../types/responses/base.js";
-import { Result } from "../types/constants.js";
+import {
+  Off,
+  On,
+  PlayState,
+  Result,
+  SignedIn,
+  SignedOut,
+  type LoginState,
+  type OnOff,
+  RepeatMode,
+  CommandUnderProcess,
+  FirmwareVersion,
+} from "../types/constants.js";
+import type {
+  PlayMode,
+  PlayerInfo,
+  PlayingMedia,
+  QueueItem,
+  QuickselectInfo,
+} from "../types/payloads.js";
+import type { Response } from "../types/responses/index.js";
+import type { FailedResponse } from "../types/responses/base.js";
+import type {
+  CheckUpdate,
+  GetNowPlayingMedia,
+  GetPlayerInfo,
+  GetPlayers,
+  GetQueue,
+  GetQuickselects,
+} from "../types/responses/player.js";
+import { constants } from "buffer";
+import { deserialize } from "v8";
 
 const schemaName = "urn:schemas-denon-com:device:ACT-Denon:1";
 const discoverMessage = [
@@ -84,20 +124,184 @@ const Port = 1255;
 const Prefix = "heos://";
 const Postfix = "\r\n";
 
-type PromiseCallbacks = {
+type PromiseCallback = {
   resolve: (value: any | PromiseLike<any>) => void;
-  reject: (reason?: any) => any;
+  reject: (reason: ErrorMessage) => any;
 };
+
+type MessageKey = keyof Message;
+type MessageEntry = LoginState | `${MessageKey}=${string}`;
+type MessageValue = Message[MessageKey];
+
+function isNumberProperty(
+  key: MessageKey
+): key is
+  | "cid"
+  | "count"
+  | "dqid"
+  | "gid"
+  | "id"
+  | "level"
+  | "pid"
+  | "qid"
+  | "returned"
+  | "sid"
+  | "step"
+  | "eid" {
+  return [
+    "cid",
+    "count",
+    "dqid",
+    "gid",
+    "id",
+    "level",
+    "pid",
+    "qid",
+    "returned",
+    "sid",
+    "step",
+    "eid",
+  ].includes(key);
+}
+
+function isFragment(value: string): value is LoginState {
+  return [SignedIn, SignedOut].includes(value);
+}
+
+function getValueOrArray(key: MessageKey, value: string): MessageValue {
+  if (isNumberProperty(key)) {
+    if (value.includes(",")) {
+      return value.split(",").map((v) => parseInt(v));
+    } else {
+      return parseInt(value);
+    }
+  }
+
+  return value;
+}
+
+function parseMessage(response: Response): Message {
+  if (response.heos.message === "") {
+    return {};
+  }
+
+  return (response.heos.message.split("&") as MessageEntry[]).reduce(
+    (message: Message, current: MessageEntry) => {
+      if (isFragment(current)) {
+        return Object.assign(message, { fragment: current });
+      } else {
+        const [key, value] = current.split("=") as [MessageKey, MessageEntry];
+        return Object.assign(message, { [key]: getValueOrArray(key, value) });
+      }
+    },
+    {}
+  );
+}
+
+function transformResponse(response: Exclude<Response, FailedResponse>) {
+  switch (response.heos.command) {
+    case Commands.System.SignIn:
+    case Commands.System.SignOut:
+    case Commands.System.HeartBeat:
+    case Commands.System.Reboot:
+    case Commands.Player.SetPlayState:
+    case Commands.Player.SetVolume:
+    case Commands.Player.VolumeUp:
+    case Commands.Player.VolumeDown:
+    case Commands.Player.SetMute:
+    case Commands.Player.ToggleMute:
+    case Commands.Player.SetPlayMode:
+    case Commands.Player.PlayQueue:
+    case Commands.Player.RemoveFromQueue:
+    case Commands.Player.SaveQueue:
+    case Commands.Player.ClearQueue:
+    case Commands.Player.MoveQueueItem:
+    case Commands.Player.PlayNext:
+    case Commands.Player.PlayPrevious:
+    case Commands.Player.SetQuickselect:
+    case Commands.Player.PlayQuickselect:
+      return undefined;
+    case Commands.System.RegisterForChangeEvents:
+      return response.heos.message.substring(7) === On;
+    case Commands.System.CheckAccount:
+      return response.heos.message === SignedOut
+        ? null
+        : response.heos.message.substring(13);
+    case Commands.Player.GetPlayers:
+      return (response as GetPlayers).payload;
+    case Commands.Player.GetPlayerInfo:
+      return (response as GetPlayerInfo).payload;
+    case Commands.Player.GetPlayState:
+      return parseMessage(response).state;
+    case Commands.Player.GetNowPlayingMedia:
+      return (response as GetNowPlayingMedia).payload;
+    case Commands.Player.GetVolume:
+      return parseMessage(response).level;
+    case Commands.Player.GetMute:
+      return parseMessage(response).state === On;
+    case Commands.Player.GetPlayMode:
+      const message = parseMessage(response);
+      return {
+        repeat: message.repeat,
+        shuffle: message.shuffle === On,
+      };
+    case Commands.Player.GetQueue:
+      return (response as GetQueue).payload;
+    case Commands.Player.GetQuickselects:
+      return (response as GetQuickselects).payload;
+    case Commands.Player.CheckUpdate:
+      return (response as CheckUpdate).payload.update;
+    default:
+      throw new Error("Can not extract payload from unknown command!");
+  }
+}
+
+function isFailedResponse(response: Response): response is FailedResponse {
+  return response.heos.result === Result.Fail;
+}
+
+function handleData(
+  data: Buffer,
+  pendingRequests: Map<Command, PromiseCallback>
+) {
+  // TODO: Improve buffer deserialization to avoid MAX_STRING_LENGTH error
+  const string = data.toString();
+  const response = JSON.parse(string) as Response;
+  console.log("Response", response);
+  if (response.heos.message === CommandUnderProcess) {
+    console.log("Skipping data call");
+    return;
+  }
+
+  const promiseCallbacks = pendingRequests.get(response.heos.command);
+  pendingRequests.delete(response.heos.command);
+  if (promiseCallbacks === undefined) {
+    return;
+  }
+
+  if (isFailedResponse(response)) {
+    const errorMessage = parseMessage(response) as ErrorMessage;
+    promiseCallbacks.reject(errorMessage);
+
+    return;
+  }
+
+  try {
+    promiseCallbacks.resolve(transformResponse(response));
+  } catch (error) {
+    console.error(error, response.heos.command);
+  }
+}
 
 export class Connection {
   device: RoutingInfo;
   socket: Socket | null = null;
   status: ConnectionStatus = ConnectionStatus.Pending;
-  pendingRequests: Map<Command, PromiseCallbacks>;
+  pendingRequests: Map<Command, PromiseCallback>;
 
   constructor(device: RoutingInfo) {
     this.device = device;
-    this.pendingRequests = new Map<Command, PromiseCallbacks>();
+    this.pendingRequests = new Map<Command, PromiseCallback>();
   }
 
   connect(): Promise<Connection> {
@@ -105,21 +309,7 @@ export class Connection {
       this.status = ConnectionStatus.Connecting;
       this.socket = new Socket()
         .on("data", (data: Buffer) => {
-          console.log("Raw data", data.toString());
-          const obj = JSON.parse(data.toString()) as FailableResponse<
-            Command,
-            string
-          >;
-          console.log("Data", obj);
-          const promiseCallbacks = this.pendingRequests.get(obj.heos.command);
-          if (promiseCallbacks !== undefined) {
-            if (obj.heos.result === Result.Success) {
-              promiseCallbacks.resolve(obj);
-            } else {
-              promiseCallbacks.reject(obj.heos.message);
-            }
-          }
-          this.pendingRequests.delete(obj.heos.command);
+          handleData(data, this.pendingRequests);
         })
         .on("timeout", () => {
           if (this.socket) {
@@ -142,7 +332,6 @@ export class Connection {
             localPort: 0,
           },
           () => {
-            console.log("Socket connected");
             this.status = ConnectionStatus.Connected;
             resolve(this);
           }
@@ -160,7 +349,6 @@ export class Connection {
 
   sendRaw(command: string): void {
     if (this.socket) {
-      console.log("Sending message", command);
       this.socket.write(command);
     }
   }
@@ -169,24 +357,275 @@ export class Connection {
     this.sendRaw(buildCommandString(command, query));
   }
 
-  getNowPlayingMedia(playerId: PlayerId): Promise<GetNowPlayingMedia> {
-    if (
-      Object.keys(this.pendingRequests).includes(
-        Commands.Player.GetNowPlayingMedia
-      )
-    ) {
+  storePromiseAndSend<T>(command: Command, query: Query = {}): Promise<T> {
+    if (Object.keys(this.pendingRequests).includes(command)) {
       throw new Error(
         "Can not send message, there is still a pending request for the same request!"
       );
     }
-    const promise = new Promise<GetNowPlayingMedia>((resolve, reject) => {
-      this.pendingRequests.set(Commands.Player.GetNowPlayingMedia, {
+    const promise = new Promise<T>((resolve, reject) => {
+      this.pendingRequests.set(command, {
         resolve,
         reject,
       });
     });
-    this.send(Commands.Player.GetNowPlayingMedia, { pid: playerId });
+
+    this.send(command, query);
 
     return promise;
+  }
+
+  // System level commands
+  receiveEvents(receive: boolean): Promise<void> {
+    return this.storePromiseAndSend<void>(
+      Commands.System.RegisterForChangeEvents,
+      {
+        enable: receive ? On : Off,
+      }
+    );
+  }
+
+  checkAccount(): Promise<string | null> {
+    return this.storePromiseAndSend<string | null>(
+      Commands.System.CheckAccount
+    );
+  }
+
+  signIn(username: string, password: string): Promise<void> {
+    return this.storePromiseAndSend<void>(Commands.System.SignIn, {
+      un: username,
+      pw: password,
+    });
+  }
+
+  signOut(): Promise<void> {
+    return this.storePromiseAndSend<void>(Commands.System.SignOut);
+  }
+
+  sendHeartBeat(): Promise<void> {
+    return this.storePromiseAndSend<void>(Commands.System.HeartBeat);
+  }
+
+  rebootSpeaker(): Promise<void> {
+    return this.storePromiseAndSend<void>(Commands.System.Reboot);
+  }
+
+  // Player level commands
+  getPlayers(): Promise<Array<PlayerInfo>> {
+    return this.storePromiseAndSend<Array<PlayerInfo>>(
+      Commands.Player.GetPlayers
+    );
+  }
+
+  getPlayerInfo(pid: PlayerId): Promise<PlayerInfo> {
+    return this.storePromiseAndSend<PlayerInfo>(Commands.Player.GetPlayerInfo, {
+      pid,
+    });
+  }
+
+  getPlayState(pid: PlayerId): Promise<PlayState> {
+    return this.storePromiseAndSend<PlayState>(Commands.Player.GetPlayState, {
+      pid,
+    });
+  }
+
+  setPlayState(pid: PlayerId, state: PlayState): Promise<void> {
+    return this.storePromiseAndSend<void>(Commands.Player.SetPlayState, {
+      pid,
+      state,
+    });
+  }
+
+  getNowPlayingMedia(pid: PlayerId): Promise<PlayingMedia> {
+    return this.storePromiseAndSend<PlayingMedia>(
+      Commands.Player.GetNowPlayingMedia,
+      { pid }
+    );
+  }
+
+  getPlayerVolume(pid: PlayerId): Promise<number> {
+    return this.storePromiseAndSend<number>(Commands.Player.GetVolume, {
+      pid,
+    });
+  }
+
+  setPlayerVolume(pid: PlayerId, level: number): Promise<void> {
+    if (level < 1 || level > 100) {
+      throw new Error("Step value needs to be between 1 and 100!");
+    }
+    return this.storePromiseAndSend<void>(Commands.Player.SetVolume, {
+      pid,
+      level,
+    });
+  }
+
+  playerVolumeUp(pid: PlayerId, step: number): Promise<void> {
+    if (step < 1 || step > 10) {
+      throw new Error("Step value needs to be between 1 and 10!");
+    }
+    return this.storePromiseAndSend<void>(Commands.Player.VolumeUp, {
+      pid,
+      step,
+    });
+  }
+
+  playerVolumeDown(pid: PlayerId, step: number = 5): Promise<void> {
+    if (step < 1 || step > 10) {
+      throw new Error("Step value needs to be between 1 and 10!");
+    }
+    return this.storePromiseAndSend<void>(Commands.Player.VolumeDown, {
+      pid,
+      step,
+    });
+  }
+
+  getPlayerMute(pid: PlayerId): Promise<boolean> {
+    return this.storePromiseAndSend<boolean>(Commands.Player.GetMute, { pid });
+  }
+
+  setPlayerMute(pid: PlayerId, state: OnOff): Promise<void> {
+    return this.storePromiseAndSend<void>(Commands.Player.SetMute, {
+      pid,
+      state,
+    });
+  }
+
+  togglePlayerMute(pid: PlayerId): Promise<void> {
+    return this.storePromiseAndSend<void>(Commands.Player.ToggleMute, {
+      pid,
+    });
+  }
+
+  getPlayMode(pid: PlayerId): Promise<PlayMode> {
+    return this.storePromiseAndSend<PlayMode>(Commands.Player.GetPlayMode, {
+      pid,
+    });
+  }
+
+  setPlayMode(
+    pid: PlayerId,
+    repeat: RepeatMode,
+    shuffle: OnOff
+  ): Promise<void> {
+    return this.storePromiseAndSend<void>(Commands.Player.SetPlayMode, {
+      pid,
+      repeat,
+      shuffle,
+    });
+  }
+
+  getQueue(
+    pid: PlayerId,
+    from: number,
+    count: number
+  ): Promise<Array<QueueItem>> {
+    if (from < 0) {
+      throw new Error("Start index must be greater or equal to 0!");
+    }
+    if (count < 1 || count > 100) {
+      throw new Error("Number of entries must be between 1 and 100!");
+    }
+    return this.storePromiseAndSend<Array<QueueItem>>(
+      Commands.Player.GetQueue,
+      {
+        pid,
+        range: [from, from + count - 1],
+      }
+    );
+  }
+
+  playQueueItem(pid: PlayerId, qid: QueueId): Promise<void> {
+    if (qid < 0) {
+      throw new Error("Queue ID must be greater or equal to 0!");
+    }
+    return this.storePromiseAndSend<void>(Commands.Player.PlayQueue, {
+      pid,
+      qid,
+    });
+  }
+
+  removeFromQueue(pid: PlayerId, qid: Array<QueueId>): Promise<void> {
+    if (qid.length > 1) {
+      throw new Error("You must remove at least one queue item!");
+    }
+    return this.storePromiseAndSend<void>(Commands.Player.RemoveFromQueue, {
+      pid,
+      qid,
+    });
+  }
+
+  saveQueue(pid: PlayerId, name: string): Promise<void> {
+    if (name.length > 128) {
+      throw new Error("A playlist name can have a maximum of 128 characters!");
+    }
+    return this.storePromiseAndSend<void>(Commands.Player.SaveQueue, {
+      pid,
+      name,
+    });
+  }
+
+  clearQueue(pid: PlayerId): Promise<void> {
+    return this.storePromiseAndSend<void>(Commands.Player.ClearQueue);
+  }
+
+  moveQueueItems(
+    pid: PlayerId,
+    sqid: Array<QueueId>,
+    dqid: QueueId
+  ): Promise<void> {
+    if (sqid.length < 1) {
+      throw new Error("You have to move at least one queue item!");
+    }
+    return this.storePromiseAndSend<void>(Commands.Player.MoveQueueItem, {
+      pid,
+      sqid,
+      dqid,
+    });
+  }
+
+  playNext(pid: PlayerId): Promise<void> {
+    return this.storePromiseAndSend<void>(Commands.Player.PlayNext, { pid });
+  }
+
+  playPrevious(pid: PlayerId): Promise<void> {
+    return this.storePromiseAndSend<void>(Commands.Player.PlayPrevious, {
+      pid,
+    });
+  }
+
+  setQuickselect(pid: PlayerId, id: QuickselectId): Promise<void> {
+    return this.storePromiseAndSend<void>(Commands.Player.SetQuickselect, {
+      pid,
+      id,
+    });
+  }
+
+  playQuickselect(pid: PlayerId, id: QuickselectId): Promise<void> {
+    return this.storePromiseAndSend<void>(Commands.Player.PlayQuickselect, {
+      pid,
+      id,
+    });
+  }
+
+  getQuickselects(
+    pid: PlayerId,
+    id: QuickselectId | undefined
+  ): Promise<Array<QuickselectInfo>> {
+    return this.storePromiseAndSend<Array<QuickselectInfo>>(
+      Commands.Player.GetQuickselects,
+      id === undefined
+        ? { pid }
+        : {
+            pid,
+            id,
+          }
+    );
+  }
+
+  checkForFirmwareUpdate(pid: PlayerId): Promise<FirmwareVersion> {
+    return this.storePromiseAndSend<FirmwareVersion>(
+      Commands.Player.CheckUpdate,
+      { pid }
+    );
   }
 }

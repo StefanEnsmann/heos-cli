@@ -1,3 +1,4 @@
+import type { Message } from "./commands/index.js";
 import type {
   Control,
   LineOut,
@@ -7,7 +8,9 @@ import type {
   Network,
   No,
   NonStation,
+  OnOff,
   Options,
+  RepeatMode,
   Role,
   SearchCriteria,
   Station,
@@ -41,6 +44,8 @@ export type PlayerInfo = {
       control: Control;
     }
 );
+
+export type PlayMode = Required<Pick<Message, "repeat" | "shuffle">>;
 
 export type PlayingMedia = {
   song: string;
