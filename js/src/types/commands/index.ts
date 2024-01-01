@@ -52,3 +52,4 @@ export type Message = Partial<{
 }>;
 export type ErrorMessage = Pick<Message, "eid" | "text">;
 export type Query = Omit<Message, "fragment" | "eid" | "text">;
+export type GroupMessage = Required<Pick<Message, "gid" | "name" | "pid">>;

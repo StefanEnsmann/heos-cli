@@ -169,11 +169,11 @@ export type BrowseEntry =
 export type MusicSourceInfo = MusicSourceData &
   (
     | {
-        available: true;
+        available: "true";
         service_username: string;
       }
     | {
-        available: false;
+        available: "false";
       }
   );
 
