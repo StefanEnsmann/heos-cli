@@ -17,15 +17,15 @@ import type {
   QueueId,
   QuickselectId,
 } from "../types/types.js";
-import { Commands, type EventResponse } from "../index.js";
+import { Commands, Event, type EventResponse } from "../index.js";
 import {
   Off,
   On,
   PlayState,
   type OnOff,
   RepeatMode,
-  CommandUnderProcess,
   FirmwareVersion,
+  SignedIn,
 } from "../types/constants.js";
 import type {
   GroupInfo,
@@ -37,10 +37,10 @@ import type {
   QuickselectInfo,
 } from "../types/payloads.js";
 import {
+  isCommandUnderProcessResponse,
   isEvent,
   isFailedResponse,
   parseMessage,
-  transformEvent,
   transformResponse,
 } from "./datahandler.js";
 import type { Response } from "../types/responses/index.js";
@@ -112,6 +112,7 @@ export class Connection {
     reject: (reason?: any) => void;
     buffer: Buffer | null;
   } | null = null;
+  callbacks: Map<Event, CallableFunction> = new Map<Event, CallableFunction>();
 
   constructor(device: RoutingInfo) {
     this.device = device;
@@ -194,8 +195,7 @@ export class Connection {
   }
 
   resolveCommandPromise(response: Response): void {
-    console.log("Command response:", response);
-    if (response.heos.message.startsWith(CommandUnderProcess)) {
+    if (isCommandUnderProcessResponse(response)) {
       console.log("Command under process!");
       return;
     }
@@ -263,7 +263,49 @@ export class Connection {
       | EventResponse;
 
     if (isEvent(response)) {
-      console.log("Event:", response);
+      const func = this.callbacks.get(response.heos.command);
+      if (!func) {
+        return;
+      }
+
+      const message = parseMessage(response);
+      switch (response.heos.command) {
+        case Event.SourcesChanged:
+        case Event.PlayersChanged:
+        case Event.GroupsChanged:
+          func();
+          break;
+        case Event.PlayerStateChanged:
+          func(message.pid, message.state);
+          break;
+        case Event.PlayerNowPlayingChanged:
+        case Event.PlayerQueueChanged:
+          func(message.pid);
+          break;
+        case Event.PlayerNowPlayingProgress:
+          func(message.pid, message.cur_pos, message.duration);
+          break;
+        case Event.PlayerPlaybackError:
+          func(message.pid, message.error);
+          break;
+        case Event.PlayerVolumeChanged:
+          func(message.pid, message.level, message.mute === On);
+          break;
+        case Event.RepeatModeChanged:
+          func(message.pid, message.repeat);
+          break;
+        case Event.ShuffleModeChanged:
+          func(message.pid, message.shuffle === On);
+          break;
+        case Event.GroupVolumeChanged:
+          func(message.gid, message.level, message.mute === On);
+          break;
+        case Event.UserChanged:
+          func(message.fragment === SignedIn ? message.un : null);
+          break;
+        default:
+          throw new Error("Can not extract payload from unknown event!");
+      }
     } else {
       this.resolveCommandPromise(response);
     }
@@ -311,8 +353,61 @@ export class Connection {
     });
   }
 
+  on(event: typeof Event.SourcesChanged, listener: () => any): Connection;
+  on(event: typeof Event.PlayersChanged, listener: () => any): Connection;
+  on(event: typeof Event.GroupsChanged, listener: () => any): Connection;
+  on(
+    event: typeof Event.PlayerStateChanged,
+    listener: (pid: PlayerId, state: PlayState) => any
+  ): Connection;
+  on(
+    event: typeof Event.PlayerQueueChanged,
+    listener: (pid: PlayerId) => any
+  ): Connection;
+  on(
+    event: typeof Event.PlayerNowPlayingChanged,
+    listener: (pid: PlayerId) => any
+  ): Connection;
+  on(
+    event: typeof Event.PlayerNowPlayingProgress,
+    listener: (pid: PlayerId, cur_pos: number, duration: number) => any
+  ): Connection;
+  on(
+    event: typeof Event.PlayerPlaybackError,
+    listener: (pid: PlayerId, error: string) => any
+  ): Connection;
+  on(
+    event: typeof Event.PlayerVolumeChanged,
+    listener: (pid: PlayerId, level: number, mute: boolean) => any
+  ): Connection;
+  on(
+    event: typeof Event.RepeatModeChanged,
+    listener: (pid: PlayerId, repeat: RepeatMode) => any
+  ): Connection;
+  on(
+    event: typeof Event.ShuffleModeChanged,
+    listener: (pid: PlayerId, shuffle: boolean) => any
+  ): Connection;
+  on(
+    event: typeof Event.GroupVolumeChanged,
+    listener: (gid: GroupId, level: number, mute: boolean) => any
+  ): Connection;
+  on(
+    event: typeof Event.UserChanged,
+    listener: (username: string | null) => any
+  ): Connection;
+  on(event: Event, listener: (...args: any[]) => any): Connection {
+    if (this.callbacks.has(event)) {
+      throw new Error("Callback already registered!");
+    }
+
+    this.callbacks.set(event, listener);
+
+    return this;
+  }
+
   // System level commands
-  receiveEvents(receive: boolean): Promise<void> {
+  receiveEvents(receive: boolean = true): Promise<void> {
     return this.send<void>(
       this.eventSocket,
       Commands.System.RegisterForChangeEvents,

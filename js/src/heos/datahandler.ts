@@ -1,13 +1,24 @@
-import { Commands, Events, type EventResponse } from "../index.js";
-import type { Message } from "../types/commands/index.js";
+import {
+  Commands,
+  Event,
+  type EventResponse,
+  type GroupsChanged,
+  type PlayersChanged,
+  type SourcesChanged,
+} from "../index.js";
+import type { Command, Message } from "../types/commands/index.js";
 import {
   On,
   Result,
   SignedOut,
   type LoginState,
   SignedIn,
+  CommandUnderProcess,
 } from "../types/constants.js";
-import type { FailedResponse } from "../types/responses/base.js";
+import type {
+  CommandUnderProcessResponse,
+  FailedResponse,
+} from "../types/responses/base.js";
 import type { GetMusicSources } from "../types/responses/browse.js";
 import type { GetGroups } from "../types/responses/group.js";
 import type { Response } from "../types/responses/index.js";
@@ -19,7 +30,6 @@ import type {
   GetQueue,
   GetQuickselects,
 } from "../types/responses/player.js";
-import type { RegisterForChangeEvents } from "../types/responses/system.js";
 
 type MessageKey = keyof Message;
 type MessageEntry = LoginState | `${MessageKey}=${string}`;
@@ -35,10 +45,34 @@ export function isFailedResponse(
   return response.heos.result === Result.Fail;
 }
 
+export function isCommandUnderProcessResponse(
+  response: Response
+): response is CommandUnderProcessResponse<Command> {
+  return response.heos.message.startsWith(CommandUnderProcess);
+}
+
 export function isEvent(
-  response: RegisterForChangeEvents | EventResponse
+  response: Response | EventResponse
 ): response is EventResponse {
-  return response.heos.command !== Commands.System.RegisterForChangeEvents;
+  return response.heos.command.startsWith("event");
+}
+
+export function isEventWithMessage(
+  response: Response | EventResponse
+): response is Exclude<
+  EventResponse,
+  SourcesChanged | PlayersChanged | GroupsChanged
+> {
+  return (
+    isEvent(response) &&
+    !(
+      [
+        Event.SourcesChanged,
+        Event.PlayersChanged,
+        Event.GroupsChanged,
+      ] as Event[]
+    ).includes(response.heos.command)
+  );
 }
 
 function isNumberProperty(
@@ -84,8 +118,11 @@ function getValueOrArray(key: MessageKey, value: string): MessageValue {
   return value;
 }
 
-export function parseMessage(response: Response): Message {
-  if (response.heos.message === "") {
+export function parseMessage(response: Response | EventResponse): Message {
+  if (
+    (isEvent(response) && !isEventWithMessage(response)) ||
+    response.heos.message === ""
+  ) {
     return {};
   }
 
@@ -102,28 +139,12 @@ export function parseMessage(response: Response): Message {
   );
 }
 
-export function transformEvent(response: EventResponse) {
-  switch (response.heos.command) {
-    case Events.SourcesChanged:
-    case Events.PlayersChanged:
-    case Events.GroupsChanged:
-    case Events.PlayerStateChanged:
-    case Events.PlayerNowPlayingChanged:
-    case Events.PlayerNowPlayingProgress:
-    case Events.PlayerPlaybackError:
-    case Events.PlayerQueueChanged:
-    case Events.PlayerVolumeChanged:
-    case Events.RepeatModeChanged:
-    case Events.ShuffleModeChanged:
-    case Events.GroupVolumeChanged:
-    case Events.UserChanged:
-      return undefined;
-    default:
-      throw new Error("Can not extract payload from unknown event!");
-  }
-}
-
 export function transformResponse(response: Exclude<Response, FailedResponse>) {
+  if (isCommandUnderProcessResponse(response)) {
+    return undefined;
+  }
+
+  const message = parseMessage(response);
   switch (response.heos.command) {
     case Commands.System.SignIn:
     case Commands.System.SignOut:
@@ -152,28 +173,25 @@ export function transformResponse(response: Exclude<Response, FailedResponse>) {
     case Commands.Group.ToggleMute:
       return undefined;
     case Commands.System.RegisterForChangeEvents:
-      return response.heos.message.substring(7) === On;
+      return message.enable === On;
     case Commands.System.CheckAccount:
-      return response.heos.message === SignedOut
-        ? null
-        : response.heos.message.substring(13);
+      return message.fragment === SignedIn ? message.un : null;
     case Commands.Player.GetPlayers:
       return (response as GetPlayers).payload;
     case Commands.Player.GetPlayerInfo:
       return (response as GetPlayerInfo).payload;
     case Commands.Player.GetPlayState:
-      return parseMessage(response).state;
+      return message.state;
     case Commands.Player.GetNowPlayingMedia:
       return (response as GetNowPlayingMedia).payload;
     case Commands.Player.GetVolume:
-      return parseMessage(response).level;
+      return message.level;
     case Commands.Player.GetMute:
-      return parseMessage(response).state === On;
+      return message.state === On;
     case Commands.Player.GetPlayMode:
-      const playModeMessage = parseMessage(response);
       return {
-        repeat: playModeMessage.repeat,
-        shuffle: playModeMessage.shuffle === On,
+        repeat: message.repeat,
+        shuffle: message.shuffle === On,
       };
     case Commands.Player.GetQueue:
       return (response as GetQueue).payload;
@@ -184,16 +202,15 @@ export function transformResponse(response: Exclude<Response, FailedResponse>) {
     case Commands.Group.GetGroups:
       return (response as GetGroups).payload;
     case Commands.Group.SetGroup:
-      const setGroupMessage = parseMessage(response);
-      if (Object.keys(setGroupMessage).includes("gid")) {
-        return setGroupMessage;
+      if (Object.keys(message).includes("gid")) {
+        return message;
       }
 
       return undefined;
     case Commands.Group.GetVolume:
-      return parseMessage(response).level;
+      return message.level;
     case Commands.Group.GetMute:
-      return parseMessage(response).state === On;
+      return message.state === On;
     case Commands.Browse.GetMusicSources:
       return (response as GetMusicSources).payload;
     default:

@@ -8,7 +8,7 @@ import {
 import type { PID } from "./responses/base.js";
 import type { GroupId } from "./types.js";
 
-export const Events = {
+export const Event = {
   SourcesChanged: "event/sources_changed",
   PlayersChanged: "event/players_changed",
   GroupsChanged: "event/groups_changed",
@@ -24,77 +24,77 @@ export const Events = {
   UserChanged: "event/user_changed",
 } as const;
 
-export type Events = (typeof Events)[keyof typeof Events];
+export type Event = (typeof Event)[keyof typeof Event];
 
 type BaseEventResponse<
-  Event extends Events,
+  E extends Event,
   Message extends string | undefined = undefined
 > = Message extends undefined
   ? {
       heos: {
-        command: Event;
+        command: E;
       };
     }
   : {
       heos: {
-        command: Event;
+        command: E;
         message: Message;
       };
     };
 
-export type SourcesChanged = BaseEventResponse<typeof Events.SourcesChanged>;
+export type SourcesChanged = BaseEventResponse<typeof Event.SourcesChanged>;
 
-export type PlayersChanged = BaseEventResponse<typeof Events.PlayersChanged>;
+export type PlayersChanged = BaseEventResponse<typeof Event.PlayersChanged>;
 
-export type GroupsChanged = BaseEventResponse<typeof Events.GroupsChanged>;
+export type GroupsChanged = BaseEventResponse<typeof Event.GroupsChanged>;
 
 export type PlayerStateChanged = BaseEventResponse<
-  typeof Events.PlayerStateChanged,
+  typeof Event.PlayerStateChanged,
   `${PID}&state=${PlayState}`
 >;
 
 export type PlayerNowPlayingChanged = BaseEventResponse<
-  typeof Events.PlayerNowPlayingChanged,
+  typeof Event.PlayerNowPlayingChanged,
   PID
 >;
 
 export type PlayerNowPlayingProgress = BaseEventResponse<
-  typeof Events.PlayerNowPlayingProgress,
+  typeof Event.PlayerNowPlayingProgress,
   `${PID}&cur_pos=${number}&duration=${number}`
 >;
 
 export type PlayerPlaybackError = BaseEventResponse<
-  typeof Events.PlayerPlaybackError,
-  PID
+  typeof Event.PlayerPlaybackError,
+  `${PID}&error=${string}`
 >;
 
 export type PlayerQueueChanged = BaseEventResponse<
-  typeof Events.PlayerQueueChanged,
+  typeof Event.PlayerQueueChanged,
   PID
 >;
 
 export type PlayerVolumeChanged = BaseEventResponse<
-  typeof Events.PlayerVolumeChanged,
+  typeof Event.PlayerVolumeChanged,
   `${PID}&level=${number}&mute=${OnOff}`
 >;
 
 export type RepeatModeChanged = BaseEventResponse<
-  typeof Events.RepeatModeChanged,
+  typeof Event.RepeatModeChanged,
   `${PID}&repeat=${RepeatMode}`
 >;
 
 export type ShuffleModeChanged = BaseEventResponse<
-  typeof Events.ShuffleModeChanged,
+  typeof Event.ShuffleModeChanged,
   `${PID}&shuffle=${OnOff}`
 >;
 
 export type GroupVolumeChanged = BaseEventResponse<
-  typeof Events.GroupVolumeChanged,
+  typeof Event.GroupVolumeChanged,
   `gid=${GroupId}&level=${number}&mute=${OnOff}`
 >;
 
 export type UserChanged = BaseEventResponse<
-  typeof Events.UserChanged,
+  typeof Event.UserChanged,
   `${typeof SignedIn}&un=${string}` | typeof SignedOut
 >;
 

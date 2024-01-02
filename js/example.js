@@ -1,6 +1,18 @@
-import { Connection, discoverDevices } from "./dist/index.js";
+import { Connection, Event } from "./dist/index.js";
 
 const connection = await Connection.discoverAndConnect()
-const sources = await connection.getMusicSources();
-connection.close();
+connection.on(Event.PlayerStateChanged, (pid, state) => {
+  console.log("Play state changed:", pid, state);
+}).on(Event.PlayerNowPlayingProgress, (pid, cur_pos, duration) => {
+  console.log("Progress:", pid, cur_pos, duration);
+});
+connection.receiveEvents().then(() => {
+  setTimeout(() => {
+    connection.receiveEvents(false).then(() => {
+      connection.close();
+    });
+  }, 20000);
+}).catch(() => {
+  connection.close();
+});
 

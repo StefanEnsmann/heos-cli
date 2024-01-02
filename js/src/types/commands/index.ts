@@ -5,12 +5,9 @@ import type {
   OnOff,
   PlayState,
   RepeatMode,
-  SignedIn,
-  SignedOut,
   SystemError,
 } from "../constants.js";
 import type {
-  CommaSeparatedList,
   ContainerId,
   GroupId,
   PlayerId,
@@ -27,13 +24,17 @@ export type Command = System | Player | Group | Browse;
 export type Message = Partial<{
   cid: ContainerId;
   count: number;
+  cur_pos: number;
   dqid: QueueId;
+  duration: number;
   eid: Error | SystemError;
   enable: OnOff;
+  error: string;
   fragment: LoginState;
   gid: GroupId;
   id: QuickselectId;
   level: number;
+  mute: OnOff;
   name: string;
   pid: PlayerId | Array<PlayerId>;
   pw: string;

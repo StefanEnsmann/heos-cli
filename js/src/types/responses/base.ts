@@ -17,16 +17,26 @@ export type FailedResponse = {
   };
 };
 
-export type SuccessfulResponse<
-  CMD extends Command,
-  SuccessMessage extends string
-> = {
+export type CommandUnderProcessResponse<CMD> = {
   heos: {
     command: CMD;
     result: typeof Result.Success;
-    message: typeof CommandUnderProcess | SuccessMessage;
+    message: `${typeof CommandUnderProcess}&${string}`;
   };
 };
+
+export type SuccessfulResponse<
+  CMD extends Command,
+  SuccessMessage extends string
+> =
+  | {
+      heos: {
+        command: CMD;
+        result: typeof Result.Success;
+        message: SuccessMessage;
+      };
+    }
+  | CommandUnderProcessResponse<CMD>;
 
 export type WithPayload<
   Response extends SuccessfulResponse<Command, string>,
