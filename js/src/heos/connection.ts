@@ -253,15 +253,25 @@ export class Connection {
       return;
     }
 
-    const response = JSON.parse(buffer.toString()) as Response;
+    const s = buffer.toString();
+    console.log("Command respone", s);
+    const response = JSON.parse(s) as Response;
     this.resolveCommandPromise(response);
   }
 
   handleEventData(data: Buffer): void {
-    const response = JSON.parse(data.toString()) as
-      | RegisterForChangeEvents
-      | EventResponse;
+    data.toString()
+      .split("\r\n")
+      .filter((part: string) => part.trim().length > 0)
+      .forEach((part: string) => {
+        const response = JSON.parse(part) as
+          | RegisterForChangeEvents
+          | EventResponse;
+        this.handleEventResponse(response);
+      });
+  }
 
+  handleEventResponse(response: RegisterForChangeEvents | EventResponse): void {
     if (isEvent(response)) {
       const func = this.callbacks.get(response.heos.command);
       if (!func) {
