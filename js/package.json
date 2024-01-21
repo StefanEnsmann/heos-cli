@@ -32,6 +32,8 @@
     "typescript": "^5.3.3"
   },
   "scripts": {
-    "tinker": "yarn tsc && node ./dist/tinker.js"
+    "watch": "yarn tsc --watch --sourcemap",
+    "build": "yarn tsc",
+    "example": "node example.js"
   }
 }
