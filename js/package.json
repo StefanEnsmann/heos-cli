@@ -23,17 +23,27 @@
     "denon",
     "marantz"
   ],
-  "packageManager": "yarn@4.0.2",
+  "packageManager": "yarn@4.1.0",
+  "main": "./dist/index.js",
   "files": [
     "dist"
   ],
   "devDependencies": {
     "@types/node": "^20.10.4",
+    "tsup": "^8.0.2",
     "typescript": "^5.3.3"
   },
   "scripts": {
     "watch": "yarn tsc --watch --sourcemap",
-    "build": "yarn tsc",
+    "build": "tsup",
     "example": "node example.js"
+  },
+  "tsup": {
+    "entry": ["src/index.ts"],
+    "format": ["cjs", "esm"],
+    "dts": true,
+    "splitting": false,
+    "sourcemap": true,
+    "clean": true
   }
 }
