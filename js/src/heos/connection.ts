@@ -253,9 +253,7 @@ export class Connection {
       return;
     }
 
-    const s = buffer.toString();
-    console.log("Command respone", s);
-    const response = JSON.parse(s) as Response;
+    const response = JSON.parse(buffer.toString()) as Response;
     this.resolveCommandPromise(response);
   }
 
@@ -512,7 +510,7 @@ export class Connection {
     });
   }
 
-  playerVolumeUp(pid: PlayerId, step: number): Promise<void> {
+  playerVolumeUp(pid: PlayerId, step: number = 5): Promise<void> {
     if (step < 1 || step > 10) {
       throw new Error("Step value needs to be between 1 and 10!");
     }
