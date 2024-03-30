@@ -33,8 +33,8 @@ const ssdpDiscoveryMessage = [
  * @returns A promise for the discovery process.
  */
 export function discoverDevices(
-  timeout: number = 5000,
   maxDevices: number = Number.MAX_VALUE,
+  timeout: number = 5000,
   onDiscover?: (device: RoutingInfo) => void,
   onTimeout?: (devices: RoutingInfo[]) => void
 ): Promise<RoutingInfo[]> {
@@ -76,7 +76,7 @@ export function discoverDevices(
 export class Connection extends ConnectionWithBrowseCommands {
   static discoverAndConnect(): Promise<Connection> {
     return new Promise<Connection>((resolve, reject) => {
-      discoverDevices()
+      discoverDevices(1)
         .then((devices) => Connection.toDevice(devices[0]))
         .then((connection) => {
           resolve(connection);

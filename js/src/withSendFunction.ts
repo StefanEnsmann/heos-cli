@@ -4,7 +4,7 @@ import type { Connection } from "./index.js";
 import type { Command } from "./util/commands.js";
 import { ConnectionStatus, On, SignedIn } from "./util/constants.js";
 import { parseMessage, type ErrorMessage, type Query } from "./util/messages.js";
-import { isCheckAccountResponse, isCheckUpdateResponse, isClearQueueResponse, isCommandUnderProcessResponse, isEventResponse, isFailedResponse, isGetGroupMuteResponse, isGetGroupsResponse, isGetGroupVolumeResponse, isGetMusicSourcesResponse, isGetNowPlayingMediaResponse, isGetPlayerInfoResponse, isGetPlayerMuteResponse, isGetPlayersResponse, isGetPlayerVolumeResponse, isGetPlayModeResponse, isGetPlayStateResponse, isGetQueueResponse, isGetQuickselectsResponse, isGroupsChangedResponse, isGroupVolumeDownResponse, isGroupVolumeUpResponse, isHeartBeatResponse, isMoveQueueItemResponse, isPlayersChangedResponse, isPlayerVolumeDownResponse, isPlayerVolumeUpResponse, isPlayNextResponse, isPlayPreviousResponse, isPlayQueueResponse, isPlayQuickselectResponse, isRebootResponse, isRegisterForChangeEventsResponse, isRemoveFromQueueResponse, isSaveQueueResponse, isSetGroupMuteResponse, isSetGroupResponse, isSetGroupVolumeResponse, isSetPlayerMuteResponse, isSetPlayerVolumeResponse, isSetPlayModeResponse, isSetPlayStateResponse, isSetQuickselectResponse, isSignInResponse, isSignOutResponse, isSourcesChangedResponse, isToggleGroupMuteResponse, isTogglePlayerMuteResponse, type Response } from "./util/responses.js";
+import { isCheckAccountResponse, isCheckUpdateResponse, isClearQueueResponse, isCommandUnderProcessResponse, isEventResponse, isFailedResponse, isGetGroupMuteResponse, isGetGroupsResponse, isGetGroupVolumeResponse, isGetMusicSourcesResponse, isGetNowPlayingMediaResponse, isGetPlayerInfoResponse, isGetPlayerMuteResponse, isGetPlayersResponse, isGetPlayerVolumeResponse, isGetPlayModeResponse, isGetPlayStateResponse, isGetQueueResponse, isGetQuickselectsResponse, isGroupsChangedResponse, isGroupVolumeChangedResponse, isGroupVolumeDownResponse, isGroupVolumeUpResponse, isHeartBeatResponse, isMoveQueueItemResponse, isPlayerNowPlayingChangedResponse, isPlayerNowPlayingProgressResponse, isPlayerPlaybackErrorResponse, isPlayerQueueChangedResponse, isPlayersChangedResponse, isPlayerStateChangedResponse, isPlayerVolumeChangedResponse, isPlayerVolumeDownResponse, isPlayerVolumeUpResponse, isPlayNextResponse, isPlayPreviousResponse, isPlayQueueResponse, isPlayQuickselectResponse, isRebootResponse, isRegisterForChangeEventsResponse, isRemoveFromQueueResponse, isRepeatModeChangedResponse, isSaveQueueResponse, isSetGroupMuteResponse, isSetGroupResponse, isSetGroupVolumeResponse, isSetPlayerMuteResponse, isSetPlayerVolumeResponse, isSetPlayModeResponse, isSetPlayStateResponse, isSetQuickselectResponse, isShuffleModeChangedResponse, isSignInResponse, isSignOutResponse, isSourcesChangedResponse, isToggleGroupMuteResponse, isTogglePlayerMuteResponse, isUserChangedResponse, type Response } from "./util/responses.js";
 import type { PromiseReject, PromiseResolve } from "./util/types.js";
 import ConnectionWithListeners from "./withListeners.js";
 
@@ -114,36 +114,6 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
 
   protected getCallbackArguments(response: Response): Array<unknown> {
     const message = parseMessage(response);
-    //     case Event.PlayerStateChanged:
-    // func(message.pid, message.state);
-    // break;
-    //     case Event.PlayerNowPlayingChanged:
-    //     case Event.PlayerQueueChanged:
-    // func(message.pid);
-    // break;
-    //     case Event.PlayerNowPlayingProgress:
-    // func(message.pid, message.cur_pos, message.duration);
-    // break;
-    //     case Event.PlayerPlaybackError:
-    // func(message.pid, message.error);
-    // break;
-    //     case Event.PlayerVolumeChanged:
-    // func(message.pid, message.level, message.mute === On);
-    // break;
-    //     case Event.RepeatModeChanged:
-    // func(message.pid, message.repeat);
-    // break;
-    //     case Event.ShuffleModeChanged:
-    // func(message.pid, message.shuffle === On);
-    // break;
-    //     case Event.GroupVolumeChanged:
-    // func(message.gid, message.level, message.mute === On);
-    // break;
-    //     case Event.UserChanged:
-    // func(message.fragment === SignedIn ? message.un : null);
-    // break;
-    //     default:
-    // throw new Error('Can not extract payload from unknown event!');
     switch (true) {
       case isSignInResponse(response):
       case isSignOutResponse(response):
@@ -203,6 +173,25 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
         return [response.payload.update];
       case isSetGroupResponse(response):
         return message.gid !== undefined ? [message] : [];
+      case isPlayerStateChangedResponse(response):
+        return [message.pid, message.state];
+      case isPlayerNowPlayingChangedResponse(response):
+      case isPlayerQueueChangedResponse(response):
+        return [message.pid];
+      case isPlayerNowPlayingProgressResponse(response):
+        return [message.pid, message.cur_pos, message.duration];
+      case isPlayerPlaybackErrorResponse(response):
+        return [message.pid, message.error];
+      case isPlayerVolumeChangedResponse(response):
+        return [message.pid, message.level, message.mute === On];
+      case isRepeatModeChangedResponse(response):
+        return [message.pid, message.repeat];
+      case isShuffleModeChangedResponse(response):
+        return [message.pid, message.shuffle];
+      case isGroupVolumeChangedResponse(response):
+        return [message.gid, message.level, message.mute === On];
+      case isUserChangedResponse(response):
+        return [message.fragment === SignedIn ? message.un : null];
       default:
         console.error('Unknown response type', response);
     }
