@@ -1,3 +1,12 @@
+export const ConnectionStatus = {
+  Pending: "pending",
+  Connecting: "connecting",
+  Connected: "connected",
+  Closed: "closed",
+  Timeout: "timeout",
+  Error: "error",
+};
+
 export const MusicSource = {
   Pandora: 1,
   Rhapsody: 2,
@@ -9,13 +18,13 @@ export const MusicSource = {
   SiriusXM: 8,
   Soundcloud: 9,
   Tidal: 10,
-  // FutureService: 11,
+  // FutureService:  11,
   Rdio: 12,
   AmazonMusic: 13,
-  // FutureService: 14,
+  // FutureService:  14,
   Moodmix: 15,
   Juke: 16,
-  // FutureService: 17,
+  // FutureService:  17,
   QMusic: 18,
   LocalMedia: 1024,
   HEOSPlaylists: 1025,
@@ -46,6 +55,7 @@ export const Result = {
 } as const;
 
 export const CommandUnderProcess = "command under process";
+
 export const SignedOut = "signed_out";
 export const SignedIn = "signed_in";
 
@@ -170,7 +180,7 @@ export const Input = {
   USBDAC: "inputs/usbdac",
 } as const;
 
-export const Error = {
+export const HEOSError = {
   UnrecognizedCommand: 1,
   InvalidID: 2,
   WrongNumberOfCommandArguments: 3,
@@ -200,6 +210,7 @@ export const SystemError = {
   UserParametersInvalid: 1239,
 } as const;
 
+export type ConnectionStatus = (typeof ConnectionStatus)[keyof typeof ConnectionStatus];
 export type MusicSource = (typeof MusicSource)[keyof typeof MusicSource];
 export type NonStation =
   | typeof MusicSource.LocalMedia
@@ -208,8 +219,7 @@ export type NonStation =
   | typeof MusicSource.HEOSAuxInputs
   | typeof MusicSource.HEOSFavorites;
 export type Station = Exclude<MusicSource, NonStation>;
-export type MusicSourceType =
-  (typeof MusicSourceType)[keyof typeof MusicSourceType];
+export type MusicSourceType = (typeof MusicSourceType)[keyof typeof MusicSourceType];
 export type MediaType = (typeof MediaType)[keyof typeof MediaType];
 export type Result = (typeof Result)[keyof typeof Result];
 export type LoginState = typeof SignedIn | typeof SignedOut;
@@ -223,10 +233,8 @@ export type RepeatMode = (typeof RepeatMode)[keyof typeof RepeatMode];
 export type Role = (typeof Role)[keyof typeof Role];
 export type QueueType = (typeof QueueType)[keyof typeof QueueType];
 export type Options = (typeof Options)[keyof typeof Options];
-export type SearchCriteria =
-  (typeof SearchCriteria)[keyof typeof SearchCriteria];
-export type FirmwareVersion =
-  (typeof FirmwareVersion)[keyof typeof FirmwareVersion];
+export type SearchCriteria = (typeof SearchCriteria)[keyof typeof SearchCriteria];
+export type FirmwareVersion = (typeof FirmwareVersion)[keyof typeof FirmwareVersion];
 export type Input = (typeof Input)[keyof typeof Input];
-export type Error = (typeof Error)[keyof typeof Error];
+export type HEOSError = (typeof HEOSError)[keyof typeof HEOSError];
 export type SystemError = (typeof SystemError)[keyof typeof SystemError];

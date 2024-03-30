@@ -13,6 +13,10 @@
   },
   "bugs": "https://github.com/stefanensmann/heos-cli/issues",
   "description": "A high-level API to interact with HEOS devices.",
+  "exports": {
+    ".": "./dist/index.js",
+    "./util": "./dist/util/index.js"
+  },
   "keywords": [
     "heos",
     "music",
@@ -29,21 +33,19 @@
     "dist"
   ],
   "devDependencies": {
+    "@types/eslint": "^8",
     "@types/node": "^20.10.4",
+    "@typescript-eslint/eslint-plugin": "^7.3.1",
+    "@typescript-eslint/parser": "^7.3.1",
+    "eslint": "^8.57.0",
     "tsup": "^8.0.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^7.3.1"
   },
   "scripts": {
     "watch": "yarn tsc --watch --sourcemap",
-    "build": "tsup",
+    "lint": "yarn eslint ./src",
+    "build": "yarn lint && tsup",
     "example": "node example.js"
-  },
-  "tsup": {
-    "entry": ["src/index.ts"],
-    "format": ["cjs", "esm"],
-    "dts": true,
-    "splitting": false,
-    "sourcemap": true,
-    "clean": true
   }
 }
