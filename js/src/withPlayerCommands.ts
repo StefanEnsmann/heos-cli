@@ -108,6 +108,9 @@ export default class ConnectionWithPlayerCommands extends ConnectionWithSystemCo
     if (sqid.length < 1) {
       throw new Error('You have to move at least one queue item!');
     }
+    if (dqid < 0) {
+      throw new Error('You can not move items higher than the first position!');
+    }
     return this.send(PlayerCommand.MoveQueueItem, { pid, sqid, dqid });
   }
 
@@ -127,7 +130,7 @@ export default class ConnectionWithPlayerCommands extends ConnectionWithSystemCo
     return this.send(PlayerCommand.PlayQuickselect, { pid, id });
   }
 
-  getQuickselects(pid: PlayerId, id: QuickselectId | undefined): Promise<Array<QuickselectInfo>> {
+  getQuickselects(pid: PlayerId, id?: QuickselectId): Promise<Array<QuickselectInfo>> {
     return this.send(PlayerCommand.GetQuickselects, { pid, id });
   }
 

@@ -1,11 +1,10 @@
 import { constants } from "buffer";
 import type { Socket } from "net";
-import type { Connection } from "./index.js";
 import type { Command } from "./util/commands.js";
 import { ConnectionStatus, On, SignedIn } from "./util/constants.js";
 import { parseMessage, type ErrorMessage, type Query } from "./util/messages.js";
-import { isCheckAccountResponse, isCheckUpdateResponse, isClearQueueResponse, isCommandUnderProcessResponse, isEventResponse, isFailedResponse, isGetGroupMuteResponse, isGetGroupsResponse, isGetGroupVolumeResponse, isGetMusicSourcesResponse, isGetNowPlayingMediaResponse, isGetPlayerInfoResponse, isGetPlayerMuteResponse, isGetPlayersResponse, isGetPlayerVolumeResponse, isGetPlayModeResponse, isGetPlayStateResponse, isGetQueueResponse, isGetQuickselectsResponse, isGroupsChangedResponse, isGroupVolumeChangedResponse, isGroupVolumeDownResponse, isGroupVolumeUpResponse, isHeartBeatResponse, isMoveQueueItemResponse, isPlayerNowPlayingChangedResponse, isPlayerNowPlayingProgressResponse, isPlayerPlaybackErrorResponse, isPlayerQueueChangedResponse, isPlayersChangedResponse, isPlayerStateChangedResponse, isPlayerVolumeChangedResponse, isPlayerVolumeDownResponse, isPlayerVolumeUpResponse, isPlayNextResponse, isPlayPreviousResponse, isPlayQueueResponse, isPlayQuickselectResponse, isRebootResponse, isRegisterForChangeEventsResponse, isRemoveFromQueueResponse, isRepeatModeChangedResponse, isSaveQueueResponse, isSetGroupMuteResponse, isSetGroupResponse, isSetGroupVolumeResponse, isSetPlayerMuteResponse, isSetPlayerVolumeResponse, isSetPlayModeResponse, isSetPlayStateResponse, isSetQuickselectResponse, isShuffleModeChangedResponse, isSignInResponse, isSignOutResponse, isSourcesChangedResponse, isToggleGroupMuteResponse, isTogglePlayerMuteResponse, isUserChangedResponse, type Response } from "./util/responses.js";
-import type { PromiseReject, PromiseResolve } from "./util/types.js";
+import { isCheckAccountResponse, isCheckUpdateResponse, isClearQueueResponse, isCommandUnderProcessResponse, isEventResponse, isFailedResponse, isGetGroupMuteResponse, isGetGroupsResponse, isGetGroupVolumeResponse, isGetMusicSourcesResponse, isGetNowPlayingMediaResponse, isGetPlayerInfoResponse, isGetPlayerMuteResponse, isGetPlayersResponse, isGetPlayerVolumeResponse, isGetPlayModeResponse, isGetPlayStateResponse, isGetQueueResponse, isGetQuickselectsResponse, isGroupsChangedResponse, isGroupVolumeChangedResponse, isGroupVolumeDownResponse, isGroupVolumeUpResponse, isHeartBeatResponse, isMoveQueueItemResponse, isPlayerNowPlayingChangedResponse, isPlayerNowPlayingProgressResponse, isPlayerPlaybackErrorResponse, isPlayerQueueChangedResponse, isPlayersChangedResponse, isPlayerStateChangedResponse, isPlayerVolumeChangedResponse, isPlayerVolumeDownResponse, isPlayerVolumeUpResponse, isPlayNextResponse, isPlayPreviousResponse, isPlayQueueResponse, isPlayQuickselectResponse, isRebootResponse, isRegisterForChangeEventsResponse, isRemoveFromQueueResponse, isRepeatModeChangedResponse, isSaveQueueResponse, isSetGroupMuteResponse, isSetGroupResponse, isSetGroupVolumeResponse, isSetPlayerMuteResponse, isSetPlayerVolumeResponse, isSetPlayModeResponse, isSetPlayStateResponse, isSetQuickselectResponse, isShuffleModeChangedResponse, isSignInResponse, isSignOutResponse, isSourcesChangedResponse, isToggleGroupMuteResponse, isTogglePlayerMuteResponse, isUserChangedResponse, type CommandResponse, type Response } from "./util/responses.js";
+import type { PromiseReject, PromiseResolve, RoutingInfo } from "./util/types.js";
 import ConnectionWithListeners from "./withListeners.js";
 
 type CommandCache = {
@@ -19,21 +18,14 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
   protected currentCommand: CommandCache | null = null;
   protected currentEventCommand: CommandCache | null = null;
 
-  protected initSockets(resolve: PromiseResolve<Connection>, reject: PromiseReject<Error>): void {
+  constructor(device: RoutingInfo) {
+    super(device);
     this.status = ConnectionStatus.Connecting;
-    this.commandSocket = this.createSocket(this.handleCommandData, reject, () => {
-      console.log('Command socket connected!');
-      this.eventSocket = this.createSocket(this.handleEventData, reject, () => {
-        console.log('Event socket connected!');
-        this.status = ConnectionStatus.Connected;
-        resolve(this as unknown as Connection);
-      });
-    });
   }
 
-  protected resolveCommandPromise(response: Response): void {
+  protected resolveCommandPromise(response: CommandResponse): void {
     let currentCommand = null;
-    if (isEventResponse(response)) {
+    if (isRegisterForChangeEventsResponse(response)) {
       if (!this.currentEventCommand) {
         console.error('No command data for incoming event response!');
         return;
@@ -82,7 +74,7 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
       return;
     }
 
-    this.resolveCommandPromise(JSON.parse(buffer.toString()) as Response);
+    this.resolveCommandPromise(JSON.parse(buffer.toString()) as CommandResponse);
   }
 
   protected handleEventData(data: Buffer): void {
@@ -204,7 +196,7 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
       throw new Error('Requested socket is not ready!');
     }
 
-    const isEventSocket = socket !== this.eventSocket;
+    const isEventSocket = socket === this.eventSocket;
     if (!isEventSocket && this.currentCommand || isEventSocket && this.currentEventCommand) {
       throw new Error('There is another command pending!');
     }

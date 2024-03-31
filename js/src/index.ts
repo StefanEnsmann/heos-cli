@@ -1,5 +1,5 @@
 import { createSocket } from "dgram";
-import type { PromiseReject, RoutingInfo } from "./util/types.js";
+import type { RoutingInfo } from "./util/types.js";
 import ConnectionWithBrowseCommands from "./withBrowseCommands.js";
 
 const heosSchemaName = 'urn:schemas-denon-com:device:ACT-Denon:1';
@@ -74,23 +74,18 @@ export function discoverDevices(
 }
 
 export class Connection extends ConnectionWithBrowseCommands {
-  static discoverAndConnect(): Promise<Connection> {
-    return new Promise<Connection>((resolve, reject) => {
-      discoverDevices(1)
-        .then((devices) => Connection.toDevice(devices[0]))
-        .then((connection) => {
-          resolve(connection);
-        })
-        .catch((reason) => {
-          reject(reason);
-        });
-    });
+  private constructor(device: RoutingInfo) {
+    super(device);
   }
 
-  static toDevice(device: RoutingInfo): Promise<Connection> {
-    return new Promise<Connection>((resolve, reject) => {
-      const connection = new Connection(device);
-      connection.initSockets(resolve, reject as PromiseReject<Error>);
-    });
+  static async discoverAndConnect(): Promise<Connection> {
+    const devices = await discoverDevices(1);
+    return await Connection.toDevice(devices[0]);
+  }
+
+  static async toDevice(device: RoutingInfo): Promise<Connection> {
+    const connection = new Connection(device);
+    await connection.initSockets(connection.handleCommandData, connection.handleEventData);
+    return connection;
   }
 }
