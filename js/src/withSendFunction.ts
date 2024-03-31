@@ -192,6 +192,8 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
   }
 
   protected send<T>(command: Command, query: Query = {}, socket: Socket | null = this.commandSocket): Promise<T> {
+    (Object.keys(query) as Array<keyof Query>).forEach(key => query[key] === undefined && delete query[key]);
+
     if (socket === null) {
       throw new Error('Requested socket is not ready!');
     }
