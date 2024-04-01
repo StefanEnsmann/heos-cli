@@ -1,6 +1,6 @@
-import { type LoginState, type MusicSource, type OnOff, type PlayState, type RepeatMode, type HEOSError, SignedIn, SignedOut, SearchCriteria, Input, QueueType } from "./constants.js";
+import { type LoginState, type OnOff, type PlayState, type RepeatMode, type HEOSError, SignedIn, SignedOut, SearchCriteria, Input, QueueType } from "./constants.js";
 import { type Response } from "./responses.js";
-import type { ContainerId, GroupId, MediaId, PlayerId, QueueId, QuickselectId } from "./types.js";
+import type { ContainerId, GroupId, MediaId, PlayerId, QueueId, QuickselectId, SourceId } from "./types.js";
 
 export type Message = Partial<{
   aid: QueueType;
@@ -29,7 +29,7 @@ export type Message = Partial<{
   returned: number;
   search: string;
   shuffle: OnOff;
-  sid: MusicSource;
+  sid: SourceId;
   scid: SearchCriteria;
   spid: PlayerId;
   sqid: Array<QueueId>;

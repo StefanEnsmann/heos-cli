@@ -3,7 +3,7 @@ import type { Socket } from "net";
 import type { Command } from "./util/commands.js";
 import { ConnectionStatus, On, SignedIn } from "./util/constants.js";
 import { parseMessage, type ErrorMessage, type Query } from "./util/messages.js";
-import { isCheckAccountResponse, isCheckUpdateResponse, isClearQueueResponse, isCommandUnderProcessResponse, isEventResponse, isFailedResponse, isGetGroupMuteResponse, isGetGroupsResponse, isGetGroupVolumeResponse, isGetMusicSourcesResponse, isGetNowPlayingMediaResponse, isGetPlayerInfoResponse, isGetPlayerMuteResponse, isGetPlayersResponse, isGetPlayerVolumeResponse, isGetPlayModeResponse, isGetPlayStateResponse, isGetQueueResponse, isGetQuickselectsResponse, isGroupsChangedResponse, isGroupVolumeChangedResponse, isGroupVolumeDownResponse, isGroupVolumeUpResponse, isHeartBeatResponse, isMoveQueueItemResponse, isPlayerNowPlayingChangedResponse, isPlayerNowPlayingProgressResponse, isPlayerPlaybackErrorResponse, isPlayerQueueChangedResponse, isPlayersChangedResponse, isPlayerStateChangedResponse, isPlayerVolumeChangedResponse, isPlayerVolumeDownResponse, isPlayerVolumeUpResponse, isPlayNextResponse, isPlayPreviousResponse, isPlayQueueResponse, isPlayQuickselectResponse, isRebootResponse, isRegisterForChangeEventsResponse, isRemoveFromQueueResponse, isRepeatModeChangedResponse, isSaveQueueResponse, isSetGroupMuteResponse, isSetGroupResponse, isSetGroupVolumeResponse, isSetPlayerMuteResponse, isSetPlayerVolumeResponse, isSetPlayModeResponse, isSetPlayStateResponse, isSetQuickselectResponse, isShuffleModeChangedResponse, isSignInResponse, isSignOutResponse, isSourcesChangedResponse, isToggleGroupMuteResponse, isTogglePlayerMuteResponse, isUserChangedResponse, type CommandResponse, type Response, isGetGroupInfoResponse } from "./util/responses.js";
+import { isCheckAccountResponse, isCheckUpdateResponse, isClearQueueResponse, isCommandUnderProcessResponse, isEventResponse, isFailedResponse, isGetGroupMuteResponse, isGetGroupsResponse, isGetGroupVolumeResponse, isGetMusicSourcesResponse, isGetNowPlayingMediaResponse, isGetPlayerInfoResponse, isGetPlayerMuteResponse, isGetPlayersResponse, isGetPlayerVolumeResponse, isGetPlayModeResponse, isGetPlayStateResponse, isGetQueueResponse, isGetQuickselectsResponse, isGroupsChangedResponse, isGroupVolumeChangedResponse, isGroupVolumeDownResponse, isGroupVolumeUpResponse, isHeartBeatResponse, isMoveQueueItemResponse, isPlayerNowPlayingChangedResponse, isPlayerNowPlayingProgressResponse, isPlayerPlaybackErrorResponse, isPlayerQueueChangedResponse, isPlayersChangedResponse, isPlayerStateChangedResponse, isPlayerVolumeChangedResponse, isPlayerVolumeDownResponse, isPlayerVolumeUpResponse, isPlayNextResponse, isPlayPreviousResponse, isPlayQueueResponse, isPlayQuickselectResponse, isRebootResponse, isRegisterForChangeEventsResponse, isRemoveFromQueueResponse, isRepeatModeChangedResponse, isSaveQueueResponse, isSetGroupMuteResponse, isSetGroupResponse, isSetGroupVolumeResponse, isSetPlayerMuteResponse, isSetPlayerVolumeResponse, isSetPlayModeResponse, isSetPlayStateResponse, isSetQuickselectResponse, isShuffleModeChangedResponse, isSignInResponse, isSignOutResponse, isSourcesChangedResponse, isToggleGroupMuteResponse, isTogglePlayerMuteResponse, isUserChangedResponse, type CommandResponse, type Response, isGetGroupInfoResponse, isGetSourceInfoResponse, isGetSearchCriteriaResponse, isBrowseResponse, isSearchResponse } from "./util/responses.js";
 import type { PromiseReject, PromiseResolve, RoutingInfo } from "./util/types.js";
 import ConnectionWithListeners from "./withListeners.js";
 
@@ -148,6 +148,8 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
       case isGetGroupsResponse(response):
       case isGetGroupInfoResponse(response):
       case isGetMusicSourcesResponse(response):
+      case isGetSourceInfoResponse(response):
+      case isGetSearchCriteriaResponse(response):
         return [response.payload];
       case isGetPlayStateResponse(response):
         return [message.state];
@@ -185,6 +187,12 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
         return [message.gid, message.level, message.mute === On];
       case isUserChangedResponse(response):
         return [message.fragment === SignedIn ? message.un : null];
+      case isBrowseResponse(response):
+      case isSearchResponse(response):
+        return [{
+          results: response.payload,
+          options: response.options,
+        }];
       default:
         console.error('Unknown response type', response);
     }

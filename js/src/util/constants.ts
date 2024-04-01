@@ -1,3 +1,5 @@
+import type { CustomMusicSource, SourceId } from "./types.js";
+
 export const ConnectionStatus = {
   Pending: "pending",
   Connecting: "connecting",
@@ -7,7 +9,7 @@ export const ConnectionStatus = {
   Error: "error",
 };
 
-export const MusicSource = {
+export const BuiltinMusicSource = {
   Pandora: 1,
   Rhapsody: 2,
   TuneIn: 3,
@@ -32,6 +34,22 @@ export const MusicSource = {
   HEOSAuxInputs: 1027,
   HEOSFavorites: 1028,
 } as const;
+
+export function isBuiltinMusicSource(sid: SourceId): sid is BuiltinMusicSource {
+  return Object.values(BuiltinMusicSource).includes(sid as BuiltinMusicSource);
+}
+
+export function isNapster(sid: SourceId): sid is typeof BuiltinMusicSource.Napster {
+  return sid === BuiltinMusicSource.Napster;
+}
+
+export function isPandora(sid: SourceId): sid is typeof BuiltinMusicSource.Pandora {
+  return sid === BuiltinMusicSource.Pandora;
+}
+
+export function isIHeartRadio(sid: SourceId): sid is typeof BuiltinMusicSource.iHeartRadio {
+  return sid === BuiltinMusicSource.iHeartRadio;
+}
 
 export const MusicSourceType = {
   MusicService: "music_service",
@@ -123,6 +141,14 @@ export const Option = {
   PlayableContainer: 21,
 } as const;
 
+export function isCreateNewStationOption(option: Option): option is typeof Option.CreateNewStation {
+  return option === Option.CreateNewStation;
+}
+
+export function isNapsterOption(option: Option): option is 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
+  return option <= Option.RemovePlaylistFromLibrary;
+}
+
 export const SearchCriteria = {
   Artist: 1,
   Track: 3,
@@ -211,14 +237,14 @@ export const SystemError = {
 } as const;
 
 export type ConnectionStatus = (typeof ConnectionStatus)[keyof typeof ConnectionStatus];
-export type MusicSource = (typeof MusicSource)[keyof typeof MusicSource];
+export type BuiltinMusicSource = (typeof BuiltinMusicSource)[keyof typeof BuiltinMusicSource];
 export type NonStation =
-  | typeof MusicSource.LocalMedia
-  | typeof MusicSource.HEOSPlaylists
-  | typeof MusicSource.HEOSHistory
-  | typeof MusicSource.HEOSAuxInputs
-  | typeof MusicSource.HEOSFavorites;
-export type Station = Exclude<MusicSource, NonStation>;
+  | typeof BuiltinMusicSource.LocalMedia
+  | typeof BuiltinMusicSource.HEOSPlaylists
+  | typeof BuiltinMusicSource.HEOSHistory
+  | typeof BuiltinMusicSource.HEOSAuxInputs
+  | typeof BuiltinMusicSource.HEOSFavorites;
+export type Station = Exclude<BuiltinMusicSource, NonStation>;
 export type MusicSourceType = (typeof MusicSourceType)[keyof typeof MusicSourceType];
 export type MediaType = (typeof MediaType)[keyof typeof MediaType];
 export type Result = (typeof Result)[keyof typeof Result];

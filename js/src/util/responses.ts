@@ -1,7 +1,7 @@
 import { type Command, SystemCommand, PlayerCommand, GroupCommand, BrowseCommand } from "./commands.js";
-import { Result, CommandUnderProcess, type HEOSError, type OnOff, SignedIn, SignedOut, PlayState, RepeatMode, FirmwareVersion, MusicSource, SearchCriteria } from "./constants.js";
+import { Result, CommandUnderProcess, type HEOSError, type OnOff, SignedIn, SignedOut, PlayState, RepeatMode, FirmwareVersion, SearchCriteria } from "./constants.js";
 import { Event } from "./events.js";
-import type { BrowseEntry, BrowseOption, CommaSeparatedList, ContainerId, GroupId, GroupInfo, MusicSourceInfo, OptionalString, PlayerId, PlayerInfo, PlayingMedia, PlayingStationOption, QueueId, QueueItem, QuickselectId, QuickselectInfo, SearchCriteriaInfo } from "./types.js";
+import type { BrowseEntry, BrowseOption, CommaSeparatedList, ContainerId, GroupId, GroupInfo, MusicSourceInfo, OptionalString, PlayerId, PlayerInfo, PlayingMedia, PlayingStationOption, QueueId, QueueItem, QuickselectId, QuickselectInfo, SearchCriteriaInfo, SourceId } from "./types.js";
 
 ///
 /// Generic Responses
@@ -776,7 +776,7 @@ export type GetSourceInfoResponse = {
   heos: {
     command: typeof BrowseCommand.GetSourceInfo;
     result: typeof Result.Success;
-    message: `sid=${MusicSource}`;
+    message: `sid=${SourceId}`;
   };
   payload: MusicSourceInfo;
 };
@@ -789,7 +789,7 @@ export type BrowseResponse = {
   heos: {
     command: typeof BrowseCommand.Browse,
     result: typeof Result.Success;
-    message: `sid=${MusicSource}${OptionalString<`&cid=${ContainerId}&range=${number},${number}`>}&returned=${number}&count=${number}`;
+    message: `sid=${SourceId}${OptionalString<`&cid=${ContainerId}&range=${number},${number}`>}&returned=${number}&count=${number}`;
   };
   payload: Array<BrowseEntry>;
   options: Array<BrowseOption>;
@@ -803,7 +803,7 @@ export type GetSearchCriteriaResponse = {
   heos: {
     command: typeof BrowseCommand.GetSearchCriteria;
     result: typeof Result.Success;
-    message: `sid=${MusicSource}`;
+    message: `sid=${SourceId}`;
   };
   payload: Array<SearchCriteriaInfo>;
 };
@@ -816,7 +816,7 @@ export type SearchResponse = {
   heos: {
     command: typeof BrowseCommand.Search,
     result: typeof Result.Success;
-    message: `sid=${MusicSource}&search=${string}&scid=${SearchCriteria}${OptionalString<`}&range=${number},${number}`>}&returned=${number}&count=${number}`;
+    message: `sid=${SourceId}&search=${string}&scid=${SearchCriteria}${OptionalString<`}&range=${number},${number}`>}&returned=${number}&count=${number}`;
   };
   payload: Array<BrowseEntry>;
   options: Array<BrowseOption>;

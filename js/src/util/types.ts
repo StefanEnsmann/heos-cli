@@ -1,4 +1,4 @@
-import type { Control, LineOut, MediaType, MusicSource, MusicSourceType, Network, NonStation, Option, Role, SearchCriteria, Station, YesNo } from "./constants.js";
+import type { BuiltinMusicSource, Control, LineOut, MediaType, MusicSourceType, Network, NonStation, Option, Role, SearchCriteria, Station, YesNo } from "./constants.js";
 import type { Message } from "./messages.js";
 
 export type PromiseResolve<T> = (value: T | PromiseLike<T>) => void;
@@ -17,8 +17,11 @@ export type QueueId = number;
 export type AlbumId = string;
 
 export type QuickselectId = number;
-export type ContainerId = number;
+export type ContainerId = string;
 export type MediaId = string;
+export type SourceId = number;
+export type CustomMusicSource = Exclude<SourceId, BuiltinMusicSource>;
+export type MusicSource = CustomMusicSource | BuiltinMusicSource;
 
 export type PlayMode = Required<Pick<Message, "repeat" | "shuffle">>;
 
@@ -96,7 +99,7 @@ export type GroupInfo = {
 export type MusicSourceData = {
   image_url: string;
   name: string;
-  sid: MusicSource;
+  sid: SourceId;
   type: MusicSourceType;
 };
 
@@ -136,7 +139,7 @@ export type BrowseEntry = {
   mid: MediaId;
   name: string;
   playable: YesNo;
-  sid?: MusicSource;
+  sid?: SourceId;
   type: MusicSourceType | MediaType;
 };
 
@@ -145,7 +148,7 @@ export type MusicSourceInfo = {
   image_url: string;
   name: string;
   service_username?: string;
-  sid: MusicSource;
+  sid: SourceId;
   type: MusicSourceType;
 };
 
