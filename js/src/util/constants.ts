@@ -106,7 +106,7 @@ export const QueueType = {
   ReplaceAndPlay: 4,
 } as const;
 
-export const Options = {
+export const Option = {
   AddTrackToLibrary: 1,
   AddAlbumToLibrary: 2,
   AddStationToLibrary: 3,
@@ -232,7 +232,7 @@ export type PlayState = (typeof PlayState)[keyof typeof PlayState];
 export type RepeatMode = (typeof RepeatMode)[keyof typeof RepeatMode];
 export type Role = (typeof Role)[keyof typeof Role];
 export type QueueType = (typeof QueueType)[keyof typeof QueueType];
-export type Options = (typeof Options)[keyof typeof Options];
+export type Option = (typeof Option)[keyof typeof Option];
 export type SearchCriteria = (typeof SearchCriteria)[keyof typeof SearchCriteria];
 export type FirmwareVersion = (typeof FirmwareVersion)[keyof typeof FirmwareVersion];
 export type Input = (typeof Input)[keyof typeof Input];

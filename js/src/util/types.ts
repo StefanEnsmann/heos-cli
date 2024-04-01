@@ -1,4 +1,4 @@
-import type { Control, LineOut, MediaType, MusicSource, MusicSourceType, Network, NonStation, Options, Role, SearchCriteria, Station, YesNo } from "./constants.js";
+import type { Control, LineOut, MediaType, MusicSource, MusicSourceType, Network, NonStation, Option, Role, SearchCriteria, Station, YesNo } from "./constants.js";
 import type { Message } from "./messages.js";
 
 export type PromiseResolve<T> = (value: T | PromiseLike<T>) => void;
@@ -63,14 +63,14 @@ export type QueueItem = Omit<
 
 export type PlayingStationOption = {
   play: Array<{
-    id: typeof Options.ThumbsUp | typeof Options.ThumbsDown | typeof Options.AddToHEOSFavorites;
+    id: typeof Option.ThumbsUp | typeof Option.ThumbsDown | typeof Option.AddToHEOSFavorites;
     name: string;
   }>;
 };
 
 export type BrowseOption = {
   browse: Array<{
-    id: Options;
+    id: Option;
     name: string;
     scid?: SearchCriteria;
   }>;
