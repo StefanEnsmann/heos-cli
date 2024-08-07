@@ -28,7 +28,7 @@ export const PlayerCommand = {
   SetMute: "player/set_mute",
   ToggleMute: "player/toggle_mute",
   GetPlayMode: "player/get_play_mode",
-  SetPlayMode: "player/ste_play_mode",
+  SetPlayMode: "player/set_play_mode",
   GetQueue: "player/get_queue",
   PlayQueue: "player/play_queue",
   RemoveFromQueue: "player/remove_from_queue",

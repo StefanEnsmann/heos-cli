@@ -39,6 +39,10 @@ export function isBuiltinMusicSource(sid: SourceId): sid is BuiltinMusicSource {
   return Object.values(BuiltinMusicSource).includes(sid as BuiltinMusicSource);
 }
 
+export function isCustomMusicSource(sid: SourceId): sid is CustomMusicSource {
+  return !isBuiltinMusicSource(sid);
+}
+
 export function isNapster(sid: SourceId): sid is typeof BuiltinMusicSource.Napster {
   return sid === BuiltinMusicSource.Napster;
 }
@@ -151,7 +155,9 @@ export function isNapsterOption(option: Option): option is 1 | 2 | 3 | 4 | 5 | 6
 
 export const SearchCriteria = {
   Artist: 1,
+  Album: 2,
   Track: 3,
+  Station: 4,
   Show: 5,
 } as const;
 

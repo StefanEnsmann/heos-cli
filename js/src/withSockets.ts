@@ -9,7 +9,7 @@ export default class ConnectionWithSockets extends BaseConnection {
   protected status: ConnectionStatus = ConnectionStatus.Pending;
 
   protected clearSockets(status: ConnectionStatus): void {
-    console.log('Sockets closed', status);
+    console.log('Sockets closed. Connection status:', status);
     this.status = status;
     if (this.commandSocket) {
       this.commandSocket.end();

@@ -80,16 +80,21 @@ export default class ConnectionWithPlayerCommands extends ConnectionWithSystemCo
   }
 
   playQueueItem(pid: PlayerId, qid: QueueId): Promise<void> {
-    if (qid < 0) {
-      throw new Error('Queue ID must be greater or equal to 0!');
+    if (qid < 1) {
+      throw new Error('Queue ID must be greater or equal to 1!');
     }
     return this.send(PlayerCommand.PlayQueue, { pid, qid });
   }
 
   removeFromQueue(pid: PlayerId, qid: Array<QueueId>): Promise<void> {
-    if (qid.length > 1) {
+    if (qid.length < 1) {
       throw new Error('You must remove at least one queue item!');
     }
+    qid.forEach((item) => {
+      if (item < 1) {
+        throw new Error('Queue ID must be greater or equal to 1!');
+      }
+    });
     return this.send(PlayerCommand.RemoveFromQueue, { pid, qid });
   }
 
@@ -108,9 +113,14 @@ export default class ConnectionWithPlayerCommands extends ConnectionWithSystemCo
     if (sqid.length < 1) {
       throw new Error('You have to move at least one queue item!');
     }
-    if (dqid < 0) {
+    if (dqid < 1) {
       throw new Error('You can not move items higher than the first position!');
     }
+    sqid.forEach((item) => {
+      if (item < 1) {
+        throw new Error('Queue ID must be greater or equal to 1!');
+      }
+    });
     return this.send(PlayerCommand.MoveQueueItem, { pid, sqid, dqid });
   }
 
