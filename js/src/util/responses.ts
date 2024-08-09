@@ -825,3 +825,138 @@ export type SearchResponse = {
 export function isSearchResponse(response: Response): response is SearchResponse {
   return response.heos.command === BrowseCommand.Search;
 }
+
+// TODO: Define type
+export type PlayStreamResponse = {
+  heos: {
+    command: typeof BrowseCommand.Search,
+    result: typeof Result.Success;
+    message: `sid=${SourceId}&search=${string}&scid=${SearchCriteria}${OptionalString<`}&range=${number},${number}`>}&returned=${number}&count=${number}`;
+  };
+  payload: Array<BrowseEntry>;
+  options: Array<BrowseOption>;
+};
+
+export function isPlayStreamResponse(response: Response): response is PlayStreamResponse {
+  return response.heos.command === BrowseCommand.PlayStream;
+}
+
+// TODO: Define type
+export type PlayPresetResponse = {
+  heos: {
+    command: typeof BrowseCommand.Search,
+    result: typeof Result.Success;
+    message: `sid=${SourceId}&search=${string}&scid=${SearchCriteria}${OptionalString<`}&range=${number},${number}`>}&returned=${number}&count=${number}`;
+  };
+  payload: Array<BrowseEntry>;
+  options: Array<BrowseOption>;
+};
+
+export function isPlayPresetResponse(response: Response): response is PlayPresetResponse {
+  return response.heos.command === BrowseCommand.PlayPreset;
+}
+
+// TODO: Define type
+export type PlayInputResponse = {
+  heos: {
+    command: typeof BrowseCommand.Search,
+    result: typeof Result.Success;
+    message: `sid=${SourceId}&search=${string}&scid=${SearchCriteria}${OptionalString<`}&range=${number},${number}`>}&returned=${number}&count=${number}`;
+  };
+  payload: Array<BrowseEntry>;
+  options: Array<BrowseOption>;
+};
+
+export function isPlayInputResponse(response: Response): response is PlayInputResponse {
+  return response.heos.command === BrowseCommand.PlayInput;
+}
+
+// TODO: Define type
+export type AddToQueueResponse = {
+  heos: {
+    command: typeof BrowseCommand.Search,
+    result: typeof Result.Success;
+    message: `sid=${SourceId}&search=${string}&scid=${SearchCriteria}${OptionalString<`}&range=${number},${number}`>}&returned=${number}&count=${number}`;
+  };
+  payload: Array<BrowseEntry>;
+  options: Array<BrowseOption>;
+};
+
+export function isAddToQueueResponse(response: Response): response is AddToQueueResponse {
+  return response.heos.command === BrowseCommand.AddToQueue;
+}
+
+// TODO: Define type
+export type RenamePlaylistResponse = {
+  heos: {
+    command: typeof BrowseCommand.Search,
+    result: typeof Result.Success;
+    message: `sid=${SourceId}&search=${string}&scid=${SearchCriteria}${OptionalString<`}&range=${number},${number}`>}&returned=${number}&count=${number}`;
+  };
+  payload: Array<BrowseEntry>;
+  options: Array<BrowseOption>;
+};
+
+export function isRenamePlaylistResponse(response: Response): response is RenamePlaylistResponse {
+  return response.heos.command === BrowseCommand.RenamePlaylist;
+}
+
+// TODO: Define type
+export type DeletePlaylistResponse = {
+  heos: {
+    command: typeof BrowseCommand.Search,
+    result: typeof Result.Success;
+    message: `sid=${SourceId}&search=${string}&scid=${SearchCriteria}${OptionalString<`}&range=${number},${number}`>}&returned=${number}&count=${number}`;
+  };
+  payload: Array<BrowseEntry>;
+  options: Array<BrowseOption>;
+};
+
+export function isDeletePlaylistResponse(response: Response): response is DeletePlaylistResponse {
+  return response.heos.command === BrowseCommand.DeletePlaylist;
+}
+
+// TODO: Define type
+export type RetrieveMetadataResponse = {
+  heos: {
+    command: typeof BrowseCommand.Search,
+    result: typeof Result.Success;
+    message: `sid=${SourceId}&search=${string}&scid=${SearchCriteria}${OptionalString<`}&range=${number},${number}`>}&returned=${number}&count=${number}`;
+  };
+  payload: Array<BrowseEntry>;
+  options: Array<BrowseOption>;
+};
+
+export function isRetrieveMetadataResponse(response: Response): response is RetrieveMetadataResponse {
+  return response.heos.command === BrowseCommand.RetrieveMetadata;
+}
+
+// TODO: Define type
+export type GetServiceOptionsResponse = {
+  heos: {
+    command: typeof BrowseCommand.Search,
+    result: typeof Result.Success;
+    message: `sid=${SourceId}&search=${string}&scid=${SearchCriteria}${OptionalString<`}&range=${number},${number}`>}&returned=${number}&count=${number}`;
+  };
+  payload: Array<BrowseEntry>;
+  options: Array<BrowseOption>;
+};
+
+export function isGetServiceOptionsResponse(response: Response): response is GetServiceOptionsResponse {
+  return response.heos.command === BrowseCommand.GetServiceOptions;
+}
+
+// TODO: Define type
+export type SetServiceOptionsResponse = {
+  heos: {
+    command: typeof BrowseCommand.Search,
+    result: typeof Result.Success;
+    message: `sid=${SourceId}&search=${string}&scid=${SearchCriteria}${OptionalString<`}&range=${number},${number}`>}&returned=${number}&count=${number}`;
+  };
+  payload: Array<BrowseEntry>;
+  options: Array<BrowseOption>;
+};
+
+export function isSetServiceOptionsResponse(response: Response): response is SetServiceOptionsResponse {
+  return response.heos.command === BrowseCommand.GetServiceOptions;
+}
