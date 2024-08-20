@@ -1,158 +1,69 @@
-# HEOS CLI
+# HEOS CLI library for JavaScript
 
-# Protocol Documentation (1.17)
+A JavaScript implementation of the HEOS CLI protocol v1.17. It has no dependencies and is built with full TypeScript support.
 
-For the official documentation, see the official Denon [homepage](https://support.denon.com/app/answers/detail/a_id/6953).
+For the official documentation, see the [Denon homepage](https://support.denon.com/app/answers/detail/a_id/6953).
 
-## Connecting
+## Installation
 
-HEOS uses the SSDP protocol via UDP. To discover devices in the local network, send a `M-SEARCH` message and listen to responses (trailing newline is required):
-
-```http
-M-SEARCH * HTTP/1.1
-HOST: 239.255.255.250:1900
-ST: urn:schemas-denon-com:device:ACT-Denon:1
-MX: 5
-MAN: "ssdp:discover"
-
+Using NPM:
+```bash
+npm install heos-web/cli
 ```
 
-After discovering at least one device, one can connect to the HEOS CLI via a TCP connection to the reported IP address on port 1255.
-
-## Responses and Events
-
-A data object from the HEOS system is transmitted in JSON format and consists at least of the following:
-
-```json
-{
-  "heos": {
-    "command": "<group>/<command or event>",
-    "message": "<message>"
-  }
-}
+Using yarn:
+```bash
+yarn add heos-web/cli
 ```
 
-Responses to commands also contain a `result` field and can optionally include a `payload` and/or `options` field:
+## Usage
 
-```json
-{
-  "heos": {
-    "command": "<group>/<command>",
-    "result": "success|fail",
-    "message": "<message>"
-  },
-  "payload": {},
-  "options": []
-}
+All interactions with the HEOS system are implemented as promises / async functions. Parallel operations are not supported and will raise an error.
+
+### Connecting to HEOS devices
+
+```javascript
+import { Connection } from "./dist/index.js";
+
+const connection = await Connection.discoverAndConnect();
 ```
 
-Long running commands can potentially send a message that signals the processing of the request:
+Connecting to the HEOS system consists of two steps: Discovering HEOS devices and establishing a connection to one of them.
 
-```json
-{
-  "heos": {
-    "command": "<group>/<command>",
-    "result": "success",
-    "message": "command under process"
-  }
-}
+The most convenient way is the static function `discoverAndConnect()` from the `Connection` class. It will look for available devices and connect to the first device it finds.
+
+You can also establish a connection manually by awaiting the global function `discoverDevices(...)`, which will return an array of `RoutingInfo` and then calling `Connection.toDevice(routingInfo)`.
+
+When a connection is established, a socket connection is automatically created for sending commands, as well as a separate connection for receiving events. This procedure is recommended in the protocol specification to support receiving events and sending commands independently.
+
+### Sending commands
+
+Sending commands is done via exposed async functions on the `Connection` object. Depending on the command it will either resolve with an appropriate object or class instance, or with `void`.
+
+```javascript
+const players = await connection.getPlayers();
 ```
 
-## Commands
+### Receiving events
 
-Some query parameters supported by a command accept one of a predefined set of values. For a list of those values, see [Constants](#constants). Command responses usually return the query string as their `message` field.
+```javascript
 
-### System Commands
+import { Connection } from "./dist/index.js";
+import { Event } from "./dist/util/index.js";
 
-#### Register for Change Events
-
-Command: `heos://system/register_for_change_events`
-
-| Attribute | Description                              | Value           | Required |
-| --------- | ---------------------------------------- | --------------- | -------- |
-| enable    | Register or unregister for change events | [OnOff](#onoff) | Yes      |
-
-Response:
-
-```json
-{
-  "heos": {
-    "command": "system/register_for_change_events",
-    "result": "success",
-    "message": "enable=<OnOff>"
-  }
-}
+const connection = await Connection.discoverAndConnect();
+connection.on(Event.PlayerStateChanged, (pid, state) => {
+  console.log("Play state changed:", pid, state);
+}).on(Event.PlayerNowPlayingProgress, (pid, cur_pos, duration) => {
+  console.log("Progress:", pid, cur_pos, duration);
+});
+connection.receiveEvents().then(() => {
+  setTimeout(() => {
+    connection.receiveEvents(false).then(() => {
+      connection.close();
+    });
+  }, 20000);
+}).catch(() => {
+  connection.close();
+});
 ```
-
-#### Check HEOS Account
-
-Command: `heos://system/check_account`
-
-This command is can return a message parameter without a corresponding value to signal no signed in user, see [LoginState](#loginstate).
-
-Response:
-
-```json
-{
-  "heos": {
-    "command": "system/check_account",
-    "result": "success",
-    "message": "<LoginState>"
-  }
-}
-```
-
-#### Sign In
-
-Command: `heos://system/sign_in`
-
-| Attribute | Description                   | Value  | Required |
-| --------- | ----------------------------- | ------ | -------- |
-| un        | The username to use for login | string | Yes      |
-| pw        | The password to use for login | string | Yes      |
-
-Response:
-
-```json
-{
-  "heos": {
-    "command": "system/sign_in",
-    "result": "success",
-    "message": "<LoginState.signed_in>"
-  }
-}
-```
-
-#### Sign Out
-
-Command: `heos://system/sign_out`
-
-This command is can return a message parameter without a corresponding value to signal no signed in user, see [LoginState](#loginstate).
-
-Response:
-
-```json
-{
-  "heos": {
-    "command": "system/sign_out",
-    "result": "success",
-    "message": "<LoginState.signed_out>"
-  }
-}
-```
-
-## Constants
-
-### OnOff
-
-| Value | Description                     |
-| ----- | ------------------------------- |
-| on    | Sets the given setting to "on"  |
-| off   | Sets the given setting to "off" |
-
-### LoginState
-
-| Value                    | Description                                                                  |
-| ------------------------ | ---------------------------------------------------------------------------- |
-| signed_out               | Currently no user is logged in to the HEOS system                            |
-| signed_in&un=\<username> | The user identified by \<username> is currently logged in to the HEOS system |
