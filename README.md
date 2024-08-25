@@ -2,7 +2,7 @@
 
 A JavaScript implementation of the HEOS CLI protocol v1.17. It has no dependencies and is built with full TypeScript support.
 
-For the official documentation, see the [Denon homepage](https://support.denon.com/app/answers/detail/a_id/6953).
+For the official documentation, see the [Denon homepage](https://support.denon.com/app/answers/detail/a_id/6953). A full documentation of this package is available in the [wiki](https://github.com/HEOS-Web/cli-js/wiki).
 
 ## Installation
 
@@ -23,7 +23,7 @@ All interactions with the HEOS system are implemented as promises / async functi
 ### Connecting to HEOS devices
 
 ```javascript
-import { Connection } from "./dist/index.js";
+import { Connection } from "@HEOS-Web/cli";
 
 const connection = await Connection.discoverAndConnect();
 ```
@@ -34,7 +34,7 @@ The most convenient way is the static function `discoverAndConnect()` from the `
 
 You can also establish a connection manually by awaiting the global function `discoverDevices(...)`, which will return an array of `RoutingInfo` and then calling `Connection.toDevice(routingInfo)`.
 
-When a connection is established, a socket connection is automatically created for sending commands, as well as a separate connection for receiving events. This procedure is recommended in the protocol specification to support receiving events and sending commands independently.
+When a connection is established, a socket connection is automatically created for sending commands, as well as a separate connection for receiving events (see [Receiving Events](#receiving-events)).
 
 ### Sending commands
 
@@ -42,28 +42,31 @@ Sending commands is done via exposed async functions on the `Connection` object.
 
 ```javascript
 const players = await connection.getPlayers();
+
+players.forEach((player) => {
+  console.log(player.pid);
+});
 ```
 
 ### Receiving events
 
-```javascript
+The `Connection` instance acts as an event emitter for supported events. Receiving events from the HEOS system requries a `receiveEvents()` call to instruct the system to send unsolicited events to the client.
 
-import { Connection } from "./dist/index.js";
-import { Event } from "./dist/util/index.js";
+This package takes care of establishing a second TCP connection to the HEOS system for receiving events. For further information about connection management, consult the [protocol documentation](https://support.denon.com/app/answers/detail/a_id/6953).
+
+```javascript
+import { Connection } from "@HEOS-Web/cli";
+import { Event } from "@HEOS-Web/cli/util";
 
 const connection = await Connection.discoverAndConnect();
-connection.on(Event.PlayerStateChanged, (pid, state) => {
-  console.log("Play state changed:", pid, state);
-}).on(Event.PlayerNowPlayingProgress, (pid, cur_pos, duration) => {
-  console.log("Progress:", pid, cur_pos, duration);
-});
-connection.receiveEvents().then(() => {
-  setTimeout(() => {
-    connection.receiveEvents(false).then(() => {
-      connection.close();
-    });
-  }, 20000);
-}).catch(() => {
-  connection.close();
-});
+
+connection
+  .on(Event.PlayerStateChanged, (pid, state) => {
+    console.log("Play state changed:", pid, state);
+  })
+  .on(Event.PlayerNowPlayingProgress, (pid, cur_pos, duration) => {
+    console.log("Progress:", pid, cur_pos, duration);
+  });
+
+await connection.receiveEvents();
 ```
