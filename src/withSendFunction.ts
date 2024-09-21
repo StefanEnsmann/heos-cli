@@ -1,3 +1,26 @@
+/**
+ * @license
+ * Copyright (c) 2024 Stefan Ensmann
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 import { constants } from "buffer";
 import type { Socket } from "net";
 import type { Command } from "./util/commands.js";
@@ -7,22 +30,52 @@ import { isCheckAccountResponse, isCheckUpdateResponse, isClearQueueResponse, is
 import type { PromiseReject, PromiseResolve, RoutingInfo } from "./util/types.js";
 import ConnectionWithListeners from "./withListeners.js";
 
+/**
+ * Stores required data to fully await a HEOS command response
+ */
 type CommandCache = {
+  /** The command currently waiting for a response */
   command: Command;
+
+  /** The resolve callback for the promise awaiting the response */
   resolve: PromiseResolve<never>;
+
+  /** The reject callback for the promise awaiting the response */
   reject: PromiseReject<ErrorMessage>;
+
+  /** The buffer holding all incoming data sections until the message is complete */
   buffer: Buffer | null;
 };
 
+/**
+ * Builds upon {@link ConnectionWithListeners} and implements generic command sending functionality
+ */
 export default class ConnectionWithSendFunction extends ConnectionWithListeners {
+  /**
+   * The current command awaiting a response from the HEOS system transported through the command socket
+   */
   protected currentCommand: CommandCache | null = null;
+
+  /**
+   * The current command awaiting a response from the HEOS system transported through the event socket
+   */
   protected currentEventCommand: CommandCache | null = null;
 
+  /**
+   * Calls the parent constructor and sets the status to {@link ConnectionStatus.Connecting}
+   * 
+   * @param device The device to connect to
+   */
   constructor(device: RoutingInfo) {
     super(device);
     this.status = ConnectionStatus.Connecting;
   }
 
+  /**
+   * Resolves or rejects a previously stored promise for command execution
+   * 
+   * @param response The full response send by the HEOS system
+   */
   protected resolveCommandPromise(response: CommandResponse): void {
     let currentCommand = null;
     if (isRegisterForChangeEventsResponse(response)) {
@@ -32,16 +85,13 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
       }
       currentCommand = this.currentEventCommand;
       this.currentEventCommand = null;
+    } else if (isCommandUnderProcessResponse(response)) {
+      console.log('Command under process!');
+      return;
+    } if (!this.currentCommand) {
+      console.error('No command data for incoming command response!');
+      return;
     } else {
-      if (isCommandUnderProcessResponse(response)) {
-        console.log('Command under process!');
-        return;
-      }
-
-      if (!this.currentCommand) {
-        console.error('No command data for incoming command response!');
-        return;
-      }
       currentCommand = this.currentCommand;
       this.currentCommand = null;
 
@@ -54,21 +104,32 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
     this.handleResponse(response, [currentCommand.resolve]);
   }
 
+  /**
+   * Handles incoming command response data from the HEOS system
+   * 
+   * @param data The data buffer provided by the socket connection
+   */
   protected handleCommandData(data: Buffer): void {
     if (!this.currentCommand) {
       console.error('No command data for incoming command response!');
       return;
     }
 
+    // Concat stored command buffer (if existing) with the current incoming data
     const buffer = this.currentCommand.buffer
       ? Buffer.concat([this.currentCommand.buffer, data])
       : data;
 
+    /*
+     * HEOS messages are terminated by CRLF, so we need to store the current buffer
+     * back in the command cache, if this was not the last part
+     */
     if (data.subarray(data.length - 2).toString() !== '\r\n') {
       this.currentCommand.buffer = buffer;
       return;
     }
 
+    // Let's hope this never happens
     if (buffer.length > constants.MAX_STRING_LENGTH) {
       console.error('MAX STRING LENGTH EXCEEDED!', buffer.length, constants.MAX_STRING_LENGTH);
       return;
@@ -77,7 +138,13 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
     this.resolveCommandPromise(JSON.parse(buffer.toString()) as CommandResponse);
   }
 
+  /**
+   * Handles incoming eveng data from the HEOS system
+   *
+   * @param data The data buffer provided by the socket connection
+   */
   protected handleEventData(data: Buffer): void {
+    // The socket buffer could contain multiple event messages
     data.toString().split('\r\n')
       .filter((part: string) => part.trim().length > 0)
       .forEach((part: string) => {
@@ -97,6 +164,12 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
       });
   }
 
+  /**
+   * Handles a HEOS response and transforms it into a proper JavaScript structure
+   * 
+   * @param response The full response sent by the HEOS system
+   * @param callbacks A list of functions that should be called with the transformed response data
+   */
   protected handleResponse(response: Response, callbacks: Array<CallableFunction>): void {
     const args = this.getCallbackArguments(response);
     callbacks.forEach((func) => {
@@ -104,6 +177,12 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
     });
   }
 
+  /**
+   * Extracts parameters from a HEOS response
+   * 
+   * @param response The full response sent by the HEOS system
+   * @returns A list of parameters to be passed in any callback functions
+   */
   protected getCallbackArguments(response: Response): Array<unknown> {
     const message = parseMessage(response);
     switch (true) {
@@ -200,6 +279,15 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
     return [];
   }
 
+  /**
+   * Sends the given command with the given query string to the given socket instance
+   * 
+   * @param command The HEOS command to send
+   * @param query The query string (parameters) to send with the command
+   * @param socket The socket instance to send the command to. Defaults to the command socket
+   * 
+   * @returns A promise for the command response
+   */
   protected send<T>(command: Command, query: Query = {}, socket: Socket | null = this.commandSocket): Promise<T> {
     (Object.keys(query) as Array<keyof Query>).forEach(key => query[key] === undefined && delete query[key]);
 
@@ -226,6 +314,7 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
         this.currentCommand = commandCache;
       }
 
+      // Map all passed query string parameters to the HEOS format
       const queryString =
         Object.keys(query).length === 0 ? ''
           : '?' + Object.entries(query)
