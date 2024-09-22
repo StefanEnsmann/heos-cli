@@ -11,5 +11,5 @@
   "editor.formatOnSaveMode": "file", // required to format on save
   "files.autoSave": "onFocusChange" // optional but recommended
   ,
-  "eslint.nodePath": ".yarn/sdks",
+  "eslint.nodePath": ".yarn/sdks"
 }

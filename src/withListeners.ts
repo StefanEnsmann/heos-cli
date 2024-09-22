@@ -28,6 +28,8 @@ import ConnectionWithSockets from "./withSockets.js";
 
 /**
  * Builds upon {@link ConnectionWithSockets} and enables listener registration for HEOS events
+ * 
+ * @author Stefan Ensmann <stefan@ensmann.de>
  */
 export default class ConnectionWithListeners extends ConnectionWithSockets {
   /**

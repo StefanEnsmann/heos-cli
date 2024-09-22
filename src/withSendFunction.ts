@@ -49,6 +49,8 @@ type CommandCache = {
 
 /**
  * Builds upon {@link ConnectionWithListeners} and implements generic command sending functionality
+ * 
+ * @author Stefan Ensmann <stefan@ensmann.de>
  */
 export default class ConnectionWithSendFunction extends ConnectionWithListeners {
   /**

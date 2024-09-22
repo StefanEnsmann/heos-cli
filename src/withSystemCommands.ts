@@ -27,6 +27,8 @@ import ConnectionWithSendFunction from "./withSendFunction.js";
 
 /**
  * Builds upon {@link ConnectionWithSendFunction} and implements system level HEOS commands
+ * 
+ * @author Stefan Ensmann <stefan@ensmann.de>
  */
 export default class ConnectionWithSystemCommands extends ConnectionWithSendFunction {
   /**
