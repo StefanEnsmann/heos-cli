@@ -111,6 +111,8 @@ export default class ConnectionWithSockets extends BaseConnection {
 
   /**
    * Closes all socket connections
+   * 
+   * @category Connection Management
    */
   close(): void {
     this.clearSockets(ConnectionStatus.Closed);

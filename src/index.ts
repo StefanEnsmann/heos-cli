@@ -1,5 +1,4 @@
 /**
- * @module heos-web/cli
  * @license
  * Copyright (c) 2024 Stefan Ensmann
  *
@@ -90,7 +89,11 @@ export function discoverDevices(
       if (!early && onTimeout) {
         onTimeout(devices);
       }
-      devices.length > 0 ? resolve(devices) : reject('No devices found!');
+      if (devices.length > 0) {
+        resolve(devices);
+      } else {
+        reject('No devices found!');
+      }
     }
 
     socket
@@ -133,6 +136,8 @@ export class Connection extends ConnectionWithBrowseCommands {
    * Tries to discover HEOS devices and connects to the first device found
    * 
    * @returns A promise for the connection process
+   * 
+   * @category Connection Management
    */
   static async discoverAndConnect(): Promise<Connection> {
     const devices = await discoverDevices(1);
@@ -145,6 +150,8 @@ export class Connection extends ConnectionWithBrowseCommands {
    * @param device The device to connect to
    * 
    * @returns A promise for the connection process
+   * 
+   * @category Connection Management
    */
   static async toDevice(device: RoutingInfo): Promise<Connection> {
     const connection = new Connection(device);

@@ -35,6 +35,8 @@ export default class ConnectionWithSystemCommands extends ConnectionWithSendFunc
    * (De-)activates sending of unsolicited events by the HEOS system
    * 
    * @param receive If events should be sent by the HEOS system or not
+   * 
+   * @category System Commands
    */
   receiveEvents(receive: boolean = true): Promise<void> {
     return this.send(SystemCommand.RegisterForChangeEvents, { enable: receive ? On : Off }, this.eventSocket);
@@ -44,6 +46,8 @@ export default class ConnectionWithSystemCommands extends ConnectionWithSendFunc
    * Checks for a logged in HEOS account
    * 
    * @returns Username, if logged in, null otherwise
+   * 
+   * @category System Commands
    */
   checkAccount(): Promise<string | null> {
     return this.send(SystemCommand.CheckAccount);
@@ -54,6 +58,8 @@ export default class ConnectionWithSystemCommands extends ConnectionWithSendFunc
    * 
    * @param username The username
    * @param password The password for the given username
+   * 
+   * @category System Commands
    */
   signIn(username: string, password: string): Promise<void> {
     return this.send(SystemCommand.SignIn, { un: username, pw: password });
@@ -61,6 +67,8 @@ export default class ConnectionWithSystemCommands extends ConnectionWithSendFunc
 
   /**
    * Signs out from the current HEOS account
+   * 
+   * @category System Commands
    */
   signOut(): Promise<void> {
     return this.send(SystemCommand.SignOut);
@@ -68,6 +76,8 @@ export default class ConnectionWithSystemCommands extends ConnectionWithSendFunc
 
   /**
    * Sends a heart beat to the HEOS system
+   * 
+   * @category System Commands
    */
   sendHeartBeat(): Promise<void> {
     return this.send(SystemCommand.HeartBeat);
@@ -75,6 +85,8 @@ export default class ConnectionWithSystemCommands extends ConnectionWithSendFunc
 
   /**
    * Reboots the HEOS device currently connected to
+   * 
+   * @category System Commands
    */
   rebootSpeaker(): Promise<void> {
     return this.send(SystemCommand.Reboot);

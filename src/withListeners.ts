@@ -42,6 +42,8 @@ export default class ConnectionWithListeners extends ConnectionWithSockets {
    * 
    * @param event The HEOS event to listen to
    * @param listener The callback to execute when this event is fired
+   * 
+   * @category Event Handling
    */
   on(event: typeof Event.SourcesChanged, listener: () => void): ConnectionWithListeners;
   on(event: typeof Event.PlayersChanged, listener: () => void): ConnectionWithListeners;

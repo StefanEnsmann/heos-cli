@@ -2,7 +2,7 @@
 
 A JavaScript implementation of the HEOS CLI protocol v1.17. It has no dependencies and is built with full TypeScript support.
 
-For the official documentation, see the [Denon homepage](https://support.denon.com/app/answers/detail/a_id/6953). A full documentation of this package is available in the [wiki](https://github.com/HEOS-Web/cli-js/wiki).
+For the official documentation, see the [Denon homepage](https://support.denon.com/app/answers/detail/a_id/6953). A full documentation of this package is available [here](https://heos-web.github.io/cli-js).
 
 ## Installation
 

@@ -1,0 +1,9 @@
+{
+  "entryPoints": ["src/index.ts", "src/util/index.ts"],
+  "excludeNotDocumented": true,
+  "name": "HEOS-Web CLI",
+  "includeVersion": true,
+  "customFooterHtml": "Copyright <strong>Stefan Ensmann</strong> 2024",
+  "hideParameterTypesInTitle": false,
+  "hideGenerator": true
+}

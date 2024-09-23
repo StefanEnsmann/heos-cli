@@ -25,6 +25,7 @@ import type { CustomMusicSource, SourceId } from "./types.js";
 
 /**
  * The current status of a HEOS connection
+ * @enum
  */
 export const ConnectionStatus = {
   Pending: "pending",
@@ -33,10 +34,11 @@ export const ConnectionStatus = {
   Closed: "closed",
   Timeout: "timeout",
   Error: "error",
-};
+} as const;
 
 /**
  * All music sources currently built-in to HEOS
+ * @enum
  */
 export const BuiltinMusicSource = {
   Pandora: 1,
@@ -120,6 +122,7 @@ export function isIHeartRadio(sid: SourceId): sid is typeof BuiltinMusicSource.i
 
 /**
  * The type of a given music source
+ * @enum
  */
 export const MusicSourceType = {
   MusicService: "music_service",
@@ -130,6 +133,7 @@ export const MusicSourceType = {
 
 /**
  * The type of a retrieved media entity
+ * @enum
  */
 export const MediaType = {
   Album: "album",
@@ -142,6 +146,7 @@ export const MediaType = {
 
 /**
  * The result of a sent HEOS command
+ * @enum
  */
 export const Result = {
   Success: "success",
@@ -185,6 +190,7 @@ export const No = "no";
 
 /**
  * How a HEOS device is connected to the local network
+ * @enum
  */
 export const Network = {
   Wired: "wired",
@@ -194,6 +200,7 @@ export const Network = {
 
 /**
  * The volume mode of a HEOS device. "Fixed" indicates, that the volume is always at maximum and can not be changed through the app
+ * @enum
  */
 export const LineOut = {
   Variable: "variable",
@@ -202,6 +209,7 @@ export const LineOut = {
 
 /**
  * TODO: Figure out what this actually means
+ * @enum
  */
 export const Control = {
   None: "none",
@@ -212,6 +220,7 @@ export const Control = {
 
 /**
  * The current play state of a player or group
+ * @enum
  */
 export const PlayState = {
   Play: "play",
@@ -221,6 +230,7 @@ export const PlayState = {
 
 /**
  * The current play state of a player or group
+ * @enum
  */
 export const RepeatMode = {
   RepeatAll: "on_all",
@@ -230,6 +240,7 @@ export const RepeatMode = {
 
 /**
  * The current role of a player in a group
+ * @enum
  */
 export const Role = {
   Leader: "leader",
@@ -238,6 +249,7 @@ export const Role = {
 
 /**
  * How to add a media item to the current queue
+ * @enum
  */
 export const QueueType = {
   PlayNow: 1,
@@ -248,6 +260,7 @@ export const QueueType = {
 
 /**
  * Options that can be available for a retrieved media entity
+ * @enum
  */
 export const Option = {
   AddTrackToLibrary: 1,
@@ -290,6 +303,7 @@ export function isNapsterOption(option: Option): option is 1 | 2 | 3 | 4 | 5 | 6
 
 /**
  * Currently supported search criteria in HEOS
+ * @enum
  */
 export const SearchCriteria = {
   Artist: 1,
@@ -301,6 +315,7 @@ export const SearchCriteria = {
 
 /**
  * Signals if a firmware update is available for a given player
+ * @enum
  */
 export const FirmwareVersion = {
   NoUpdate: "update_none",
@@ -309,6 +324,7 @@ export const FirmwareVersion = {
 
 /**
  * Currently supported inputs for several HEOS devices
+ * @enum
  */
 export const Input = {
   AnalogIn1: "inputs/analog_in_1",
@@ -358,6 +374,7 @@ export const Input = {
 
 /**
  * Errors that can be returned directly from the HEOS system
+ * @enum
  */
 export const HEOSError = {
   UnrecognizedCommand: 1,
@@ -381,6 +398,7 @@ export const HEOSError = {
 
 /**
  * Errors that can be returned from external services
+ * @enum
  */
 export const SystemError = {
   RemoteError: 9,
@@ -392,31 +410,31 @@ export const SystemError = {
   UserParametersInvalid: 1239,
 } as const;
 
-export type ConnectionStatus = (typeof ConnectionStatus)[keyof typeof ConnectionStatus];
-export type BuiltinMusicSource = (typeof BuiltinMusicSource)[keyof typeof BuiltinMusicSource];
-export type NonStation =
+/** @ignore */ export type ConnectionStatus = (typeof ConnectionStatus)[keyof typeof ConnectionStatus];
+/** @ignore */ export type BuiltinMusicSource = (typeof BuiltinMusicSource)[keyof typeof BuiltinMusicSource];
+/** @ignore */ export type NonStation =
   | typeof BuiltinMusicSource.LocalMedia
   | typeof BuiltinMusicSource.HEOSPlaylists
   | typeof BuiltinMusicSource.HEOSHistory
   | typeof BuiltinMusicSource.HEOSAuxInputs
   | typeof BuiltinMusicSource.HEOSFavorites;
-export type Station = Exclude<BuiltinMusicSource, NonStation>;
-export type MusicSourceType = (typeof MusicSourceType)[keyof typeof MusicSourceType];
-export type MediaType = (typeof MediaType)[keyof typeof MediaType];
-export type Result = (typeof Result)[keyof typeof Result];
-export type LoginState = typeof SignedIn | typeof SignedOut;
-export type OnOff = typeof On | typeof Off;
-export type YesNo = typeof Yes | typeof No;
-export type Network = (typeof Network)[keyof typeof Network];
-export type LineOut = (typeof LineOut)[keyof typeof LineOut];
-export type Control = (typeof Control)[keyof typeof Control];
-export type PlayState = (typeof PlayState)[keyof typeof PlayState];
-export type RepeatMode = (typeof RepeatMode)[keyof typeof RepeatMode];
-export type Role = (typeof Role)[keyof typeof Role];
-export type QueueType = (typeof QueueType)[keyof typeof QueueType];
-export type Option = (typeof Option)[keyof typeof Option];
-export type SearchCriteria = (typeof SearchCriteria)[keyof typeof SearchCriteria];
-export type FirmwareVersion = (typeof FirmwareVersion)[keyof typeof FirmwareVersion];
-export type Input = (typeof Input)[keyof typeof Input];
-export type HEOSError = (typeof HEOSError)[keyof typeof HEOSError];
-export type SystemError = (typeof SystemError)[keyof typeof SystemError];
+/** @ignore */ export type Station = Exclude<BuiltinMusicSource, NonStation>;
+/** @ignore */ export type MusicSourceType = (typeof MusicSourceType)[keyof typeof MusicSourceType];
+/** @ignore */ export type MediaType = (typeof MediaType)[keyof typeof MediaType];
+/** @ignore */ export type Result = (typeof Result)[keyof typeof Result];
+/** @ignore */ export type LoginState = typeof SignedIn | typeof SignedOut;
+/** @ignore */ export type OnOff = typeof On | typeof Off;
+/** @ignore */ export type YesNo = typeof Yes | typeof No;
+/** @ignore */ export type Network = (typeof Network)[keyof typeof Network];
+/** @ignore */ export type LineOut = (typeof LineOut)[keyof typeof LineOut];
+/** @ignore */ export type Control = (typeof Control)[keyof typeof Control];
+/** @ignore */ export type PlayState = (typeof PlayState)[keyof typeof PlayState];
+/** @ignore */ export type RepeatMode = (typeof RepeatMode)[keyof typeof RepeatMode];
+/** @ignore */ export type Role = (typeof Role)[keyof typeof Role];
+/** @ignore */ export type QueueType = (typeof QueueType)[keyof typeof QueueType];
+/** @ignore */ export type Option = (typeof Option)[keyof typeof Option];
+/** @ignore */ export type SearchCriteria = (typeof SearchCriteria)[keyof typeof SearchCriteria];
+/** @ignore */ export type FirmwareVersion = (typeof FirmwareVersion)[keyof typeof FirmwareVersion];
+/** @ignore */ export type Input = (typeof Input)[keyof typeof Input];
+/** @ignore */ export type HEOSError = (typeof HEOSError)[keyof typeof HEOSError];
+/** @ignore */ export type SystemError = (typeof SystemError)[keyof typeof SystemError];
