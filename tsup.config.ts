@@ -7,7 +7,7 @@ export default defineConfig({
   ],
   format: "esm",
   dts: true,
-  splitting: false,
-  // minify: true,
+  // splitting: false,
+  minify: true,
   clean: true
 });
