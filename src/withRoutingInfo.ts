@@ -8,6 +8,8 @@ import type { RoutingInfo } from "./util/types.js";
 export default class BaseConnection {
   /**
    * Contains IP address information of the HEOS device this instance is connected to
+   * 
+   * @category Connection Management
    */
   protected device: RoutingInfo;
 

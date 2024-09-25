@@ -387,31 +387,51 @@ export const SystemError = {
   UserParametersInvalid: 1239,
 } as const;
 
-/** @ignore */ export type ConnectionStatus = (typeof ConnectionStatus)[keyof typeof ConnectionStatus];
-/** @ignore */ export type BuiltinMusicSource = (typeof BuiltinMusicSource)[keyof typeof BuiltinMusicSource];
-/** @ignore */ export type NonStation =
+/**
+ * A built in media source that is not a radio station
+ */
+export type NonStation =
   | typeof BuiltinMusicSource.LocalMedia
   | typeof BuiltinMusicSource.HEOSPlaylists
   | typeof BuiltinMusicSource.HEOSHistory
   | typeof BuiltinMusicSource.HEOSAuxInputs
   | typeof BuiltinMusicSource.HEOSFavorites;
-/** @ignore */ export type Station = Exclude<BuiltinMusicSource, NonStation>;
-/** @ignore */ export type MusicSourceType = (typeof MusicSourceType)[keyof typeof MusicSourceType];
-/** @ignore */ export type MediaType = (typeof MediaType)[keyof typeof MediaType];
-/** @ignore */ export type Result = (typeof Result)[keyof typeof Result];
-/** @ignore */ export type LoginState = typeof SignedIn | typeof SignedOut;
-/** @ignore */ export type OnOff = typeof On | typeof Off;
-/** @ignore */ export type YesNo = typeof Yes | typeof No;
-/** @ignore */ export type Network = (typeof Network)[keyof typeof Network];
-/** @ignore */ export type LineOut = (typeof LineOut)[keyof typeof LineOut];
-/** @ignore */ export type Control = (typeof Control)[keyof typeof Control];
-/** @ignore */ export type PlayState = (typeof PlayState)[keyof typeof PlayState];
-/** @ignore */ export type RepeatMode = (typeof RepeatMode)[keyof typeof RepeatMode];
-/** @ignore */ export type Role = (typeof Role)[keyof typeof Role];
-/** @ignore */ export type QueueType = (typeof QueueType)[keyof typeof QueueType];
-/** @ignore */ export type Option = (typeof Option)[keyof typeof Option];
-/** @ignore */ export type SearchCriteria = (typeof SearchCriteria)[keyof typeof SearchCriteria];
-/** @ignore */ export type FirmwareVersion = (typeof FirmwareVersion)[keyof typeof FirmwareVersion];
-/** @ignore */ export type Input = (typeof Input)[keyof typeof Input];
-/** @ignore */ export type HEOSError = (typeof HEOSError)[keyof typeof HEOSError];
-/** @ignore */ export type SystemError = (typeof SystemError)[keyof typeof SystemError];
+
+/**
+ * A built in media source that is a radio station
+ */
+export type Station = Exclude<BuiltinMusicSource, NonStation>;
+
+/**
+ * The login state of a HEOS account
+ */
+export type LoginState = typeof SignedIn | typeof SignedOut;
+
+/**
+ * Signals that a feature should be active or not
+ */
+export type OnOff = typeof On | typeof Off;
+
+/**
+ * Signals that an action is available or not
+ */
+export type YesNo = typeof Yes | typeof No;
+
+export type ConnectionStatus = (typeof ConnectionStatus)[keyof typeof ConnectionStatus];
+export type BuiltinMusicSource = (typeof BuiltinMusicSource)[keyof typeof BuiltinMusicSource];
+export type MusicSourceType = (typeof MusicSourceType)[keyof typeof MusicSourceType];
+export type MediaType = (typeof MediaType)[keyof typeof MediaType];
+export type Result = (typeof Result)[keyof typeof Result];
+export type Network = (typeof Network)[keyof typeof Network];
+export type LineOut = (typeof LineOut)[keyof typeof LineOut];
+export type Control = (typeof Control)[keyof typeof Control];
+export type PlayState = (typeof PlayState)[keyof typeof PlayState];
+export type RepeatMode = (typeof RepeatMode)[keyof typeof RepeatMode];
+export type Role = (typeof Role)[keyof typeof Role];
+export type QueueType = (typeof QueueType)[keyof typeof QueueType];
+export type Option = (typeof Option)[keyof typeof Option];
+export type SearchCriteria = (typeof SearchCriteria)[keyof typeof SearchCriteria];
+export type FirmwareVersion = (typeof FirmwareVersion)[keyof typeof FirmwareVersion];
+export type Input = (typeof Input)[keyof typeof Input];
+export type HEOSError = (typeof HEOSError)[keyof typeof HEOSError];
+export type SystemError = (typeof SystemError)[keyof typeof SystemError];

@@ -9,6 +9,8 @@ import ConnectionWithListeners from "./withListeners.js";
 
 /**
  * Stores required data to fully await a HEOS command response
+ * 
+ * @category Command Handling
  */
 type CommandCache = {
   /** The command currently waiting for a response */
@@ -32,11 +34,15 @@ type CommandCache = {
 export default class ConnectionWithSendFunction extends ConnectionWithListeners {
   /**
    * The current command awaiting a response from the HEOS system transported through the command socket
+   * 
+   * @category Command Handling
    */
   protected currentCommand: CommandCache | null = null;
 
   /**
    * The current command awaiting a response from the HEOS system transported through the event socket
+   * 
+   * @category Command Handling
    */
   protected currentEventCommand: CommandCache | null = null;
 
@@ -44,6 +50,8 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
    * Calls the parent constructor and sets the status to {@link ConnectionStatus.Connecting}
    * 
    * @param device The device to connect to
+   * 
+   * @category Command Handling
    */
   constructor(device: RoutingInfo) {
     super(device);
@@ -54,6 +62,8 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
    * Resolves or rejects a previously stored promise for command execution
    * 
    * @param response The full response send by the HEOS system
+   * 
+   * @category Command Handling
    */
   protected resolveCommandPromise(response: CommandResponse): void {
     let currentCommand = null;
@@ -87,6 +97,8 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
    * Handles incoming command response data from the HEOS system
    * 
    * @param data The data buffer provided by the socket connection
+   * 
+   * @category Command Handling
    */
   protected handleCommandData(data: Buffer): void {
     if (!this.currentCommand) {
@@ -121,6 +133,8 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
    * Handles incoming eveng data from the HEOS system
    *
    * @param data The data buffer provided by the socket connection
+   * 
+   * @category Command Handling
    */
   protected handleEventData(data: Buffer): void {
     // The socket buffer could contain multiple event messages
@@ -148,6 +162,8 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
    * 
    * @param response The full response sent by the HEOS system
    * @param callbacks A list of functions that should be called with the transformed response data
+   * 
+   * @category Command Handling
    */
   protected handleResponse(response: Response, callbacks: Array<CallableFunction>): void {
     const args = this.getCallbackArguments(response);
@@ -161,6 +177,8 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
    * 
    * @param response The full response sent by the HEOS system
    * @returns A list of parameters to be passed in any callback functions
+   * 
+   * @category Command Handling
    */
   protected getCallbackArguments(response: Response): Array<unknown> {
     const message = parseMessage(response);
@@ -266,6 +284,8 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
    * @param socket The socket instance to send the command to. Defaults to the command socket
    * 
    * @returns A promise for the command response
+   * 
+   * @category Command Handling
    */
   protected send<T>(command: Command, query: Query = {}, socket: Socket | null = this.commandSocket): Promise<T> {
     (Object.keys(query) as Array<keyof Query>).forEach(key => query[key] === undefined && delete query[key]);

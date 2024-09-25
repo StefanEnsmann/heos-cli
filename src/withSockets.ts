@@ -11,16 +11,22 @@ import type { PromiseReject } from "./util/types.js";
 export default class ConnectionWithSockets extends BaseConnection {
   /**
    * The socket used to send commands to and receive responses from the HEOS system
+   * 
+   * @category Connection Management
    */
   protected commandSocket: Socket | null = null;
 
   /**
    * The socket used to receive events from the HEOS system
+   * 
+   * @category Connection Management
    */
   protected eventSocket: Socket | null = null;
 
   /**
    * The current status of this connection instance
+   * 
+   * @category Connection Management
    */
   protected status: ConnectionStatus = ConnectionStatus.Pending;
 
@@ -28,6 +34,8 @@ export default class ConnectionWithSockets extends BaseConnection {
    * Ends and clears all socket connections. Stores the given {@link status} as the current connection status
    * 
    * @param status The current connection status (the reason for clearing the sockets)
+   * 
+   * @category Connection Management
    */
   protected clearSockets(status: ConnectionStatus): void {
     console.log('Sockets closed. Connection status:', status);
@@ -50,6 +58,8 @@ export default class ConnectionWithSockets extends BaseConnection {
    * @param connectListener The callback to execute when a connection is established
    * 
    * @returns A successfully established Socket instance
+   * 
+   * @category Connection Management
    */
   protected createSocket(dataListener: (data: Buffer) => void, reject: PromiseReject<ConnectionStatus>, connectListener: () => void): Socket {
     return new Socket()
@@ -69,6 +79,8 @@ export default class ConnectionWithSockets extends BaseConnection {
    * @param eventHandler The callback to execute when data is coming via the event socket
    * 
    * @returns A promise for the connection process
+   * 
+   * @category Connection Management
    */
   protected initSockets(
     commandHandler: (data: Buffer) => void,

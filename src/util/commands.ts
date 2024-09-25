@@ -1,3 +1,7 @@
+/**
+ * All system level HEOS commands
+ * @enum
+ */
 export const SystemCommand = {
   RegisterForChangeEvents: "system/register_for_change_events",
   CheckAccount: "system/check_account",
@@ -10,10 +14,20 @@ export const SystemCommand = {
 
 export type SystemCommand = (typeof SystemCommand)[keyof typeof SystemCommand];
 
+/**
+ * Checks if a given command is a system level HEOS command
+ * 
+ * @param cmd The command to check
+ * @returns If the given command is a system level command
+ */
 export function isSystemCommand(cmd: string): cmd is SystemCommand {
   return cmd.startsWith("system") && Object.values(SystemCommand as Record<string, string>).includes(cmd);
 }
 
+/**
+ * All player level HEOS commands
+ * @enum
+ */
 export const PlayerCommand = {
   GetPlayers: "player/get_players",
   GetPlayerInfo: "player/get_player_info",
@@ -45,10 +59,20 @@ export const PlayerCommand = {
 
 export type PlayerCommand = (typeof PlayerCommand)[keyof typeof PlayerCommand];
 
+/**
+ * Checks if a given command is a player level HEOS command
+ * 
+ * @param cmd The command to check
+ * @returns If the given command is a player level command
+ */
 export function isPlayerCommand(cmd: string): cmd is PlayerCommand {
   return cmd.startsWith("player") && Object.values(PlayerCommand as Record<string, string>).includes(cmd);
 }
 
+/**
+ * All group level HEOS commands
+ * @enum
+ */
 export const GroupCommand = {
   GetGroups: "group/get_groups",
   GetGroupInfo: "group/get_group_info",
@@ -64,10 +88,20 @@ export const GroupCommand = {
 
 export type GroupCommand = (typeof GroupCommand)[keyof typeof GroupCommand];
 
+/**
+ * Checks if a given command is a group level HEOS command
+ * 
+ * @param cmd The command to check
+ * @returns If the given command is a group level command
+ */
 export function isGroupCommand(cmd: string): cmd is GroupCommand {
   return cmd.startsWith("group") && Object.values(GroupCommand as Record<string, string>).includes(cmd);
 }
 
+/**
+ * All browse level HEOS commands
+ * @enum
+ */
 export const BrowseCommand = {
   GetMusicSources: "browse/get_music_sources",
   GetSourceInfo: "browse/get_source_info",
@@ -87,16 +121,31 @@ export const BrowseCommand = {
 
 export type BrowseCommand = (typeof BrowseCommand)[keyof typeof BrowseCommand];
 
+/**
+ * Checks if a given command is a browse level HEOS command
+ * 
+ * @param cmd The command to check
+ * @returns If the given command is a browse level command
+ */
 export function isBrowseCommand(cmd: string): cmd is BrowseCommand {
   return cmd.startsWith("browse") && Object.values(BrowseCommand as Record<string, string>).includes(cmd);
 }
 
+/**
+ * A recognized HEOS command
+ */
 export type Command =
   | (typeof SystemCommand)[keyof typeof SystemCommand]
   | (typeof PlayerCommand)[keyof typeof PlayerCommand]
   | (typeof GroupCommand)[keyof typeof GroupCommand]
   | (typeof BrowseCommand)[keyof typeof BrowseCommand];
 
+/**
+ * Checks if a given string is a HEOS command
+ * 
+ * @param cmd The string to check
+ * @returns If the given string is a HEOS command
+ */
 export function isCommand(cmd: string): cmd is Command {
   return isSystemCommand(cmd)
     || isPlayerCommand(cmd)
