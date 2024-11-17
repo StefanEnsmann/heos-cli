@@ -77,7 +77,7 @@ export default class ConnectionWithSendFunction extends ConnectionWithListeners 
     } else if (isCommandUnderProcessResponse(response)) {
       console.log('Command under process!');
       return;
-    } if (!this.currentCommand) {
+    } else if (!this.currentCommand) {
       console.error('No command data for incoming command response!');
       return;
     } else {
